@@ -645,13 +645,13 @@
       document.getElementById('MAIN').style.display = 'none';
     }
     
-    const TABS_ADM = [['d1', 'Dashboard'], ['d2', 'Desocupacao'], ['hor', 'Horarios'], ['ag', 'Agendamento'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['dist', 'Distribuicao'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca'], ['adm', 'Admin']];
+    const TABS_ADM = [['d1', 'Dashboard'], ['d2', 'Desocupacao'], ['hor', 'Horarios'], ['ag', 'Agendamento'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca'], ['adm', 'Admin']];
     const TABS_GESTOR_VIST = [['d1', 'Dashboard'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['busca', '🔍 Busca'], ['hist', 'Historico']];
-    const TABS_GESTORA_DESOC = [['d2', 'Desocupacao'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['dist', 'Distribuicao'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca']];
+    const TABS_GESTORA_DESOC = [['d2', 'Desocupacao'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca']];
     const TABS_COL = [['meus', 'Meus Contratos'], ['tarefas', '✓ Tarefas'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['fin', 'Finalizados'], ['busca', '🔍 Busca']];
     const TABS_VIS = [['vist', 'Vistoriador'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['prot', 'Protocolo'], ['laud', 'Laudos']];
     const TABS_FIANCA = [['fianca', 'Contratos Fianca']];
-    const PFN = { d1: rD1, d2: rD2, hor: rHor, ag: rAg, vist: rVist, prot: rProt, laud: rLaud, orc: rOrc, dist: rDist, fin: rFin, adm: rAdm, meus: rMeus, busca: rBusca, hist: rHist, fianca: rFianca, rel: rRelatorio, tarefas: rTarefas };
+    const PFN = { d1: rD1, d2: rD2, hor: rHor, ag: rAg, vist: rVist, prot: rProt, laud: rLaud, orc: rOrc, dist: rDist, fin: rFin, adm: rAdm, meus: rMeus, busca: rBusca, hist: rHist, fianca: rFianca, rel: rRelatorio, tarefas: rTarefas, equipe: rEquipe };
     
     function buildNav() { 
       const nav = document.getElementById('NAV'); 
@@ -996,7 +996,7 @@
     }
     
     function rHor(c, sb) { if (!S.calMes) { const h = new Date(); S.calMes = { a: h.getFullYear(), m: h.getMonth() }; } bCal(c, sb); }
-    function bCal(c, sb) { const a = S.calMes.a, m = S.calMes.m, ult = new Date(a, m + 1, 0), hj = new Date().toISOString().split('T')[0]; let rows = ''; for (let d = 1; d <= ult.getDate(); d++) { const s = iso(a, m, d), f = fex(s), dF = isDom(s) || isFer(s), sb2 = isSab(s), isH = s === hj; const cells = HSEM.map(function(h) { if (dF) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">' + (isFer(s) ? 'feriado' : 'domingo') + '</div></td>'; if (sb2 && HSAB.indexOf(h) < 0) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">sabado</div></td>'; const sl = slSt(s, h); if (sl.t === 'ag') return '<td style="background:var(--accent-light);padding:8px;vertical-align:top;cursor:pointer" onclick="showAgInfo(\'' + sl.id + '\')"><div style="font-size:10px;color:var(--accent);text-transform:uppercase;font-weight:700">agendado #' + sl.c + '</div><div style="font-size:11px;font-weight:600">' + sl.tx + '</div></td>'; if (sl.t === 'oc') return '<td style="background:var(--warning-light);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--warning);text-transform:uppercase;font-weight:700">ocupado</div></td>'; if (sl.t === 'bl') return '<td style="background:var(--bg);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">bloqueado</div><div style="font-size:9px;color:var(--accent);margin-top:2px">Desbloquear</div></td>'; return '<td style="background:var(--bg-card);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--success);text-transform:uppercase;font-weight:700">livre</div></td>'; }).join(''); rows += '<tr style="' + (isH ? 'background:var(--accent-light)' : '') + '"><td style="background:var(--bg);padding:10px 14px;min-width:160px;border-right:2px solid var(--border)"><div style="font-size:10px;color:var(--fg-subtle)">' + f.ds + '</div><div style="font-size:14px;font-weight:700;color:var(--fg)">' + f.dia + ' de ' + f.mes + '</div></td>' + cells + '</tr>'; } c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Grade de Horarios</h1></div></div><div class="card animate-in" style="overflow:visible"><div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px"><button class="btn btn-secondary btn-sm" onclick="calMov(-1)">Anterior</button><span style="font-size:15px;font-weight:700">' + ML[m] + ' ' + a + '</span><button class="btn btn-secondary btn-sm" onclick="calMov(1)">Proximo</button></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="background:var(--bg);padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;min-width:160px;border-right:2px solid var(--border)">Data</th>' + HSEM.map(function(h) { return '<th style="background:linear-gradient(135deg,var(--accent),#3B82F6);color:white;padding:10px 12px;text-align:center;font-size:11px;font-weight:700">' + h + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div></div>'; showSidebar(false); }
+    function bCal(c, sb) { const a = S.calMes.a, m = S.calMes.m, ult = new Date(a, m + 1, 0), hj = new Date().toISOString().split('T')[0]; let rows = ''; for (let d = 1; d <= ult.getDate(); d++) { const s = iso(a, m, d), f = fex(s), dF = isDom(s) || isFer(s), sb2 = isSab(s), isH = s === hj; const cells = HSEM.map(function(h) { if (dF) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">' + (isFer(s) ? 'feriado' : 'domingo') + '</div></td>'; if (sb2 && HSAB.indexOf(h) < 0) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">sabado</div></td>'; const sl = slSt(s, h); if (sl.t === 'ag') return '<td style="background:var(--accent-light);padding:8px;vertical-align:top;cursor:pointer" onclick="showAgInfo(\'' + sl.id + '\')"><div style="font-size:10px;color:var(--accent);text-transform:uppercase;font-weight:700">agendado #' + sl.c + '</div><div style="font-size:11px;font-weight:600">' + sl.tx + '</div></td>'; if (sl.t === 'oc') return '<td style="background:var(--warning-light);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--warning);text-transform:uppercase;font-weight:700">ocupado</div></td>'; if (sl.t === 'bl') return '<td style="background:var(--bg);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--danger);text-transform:uppercase;font-weight:700">bloqueado</div>' + (sl.tx && sl.tx !== 'Bloqueado' ? '<div style="font-size:10px;color:var(--fg-muted);margin-top:2px;font-style:italic">' + sl.tx + '</div>' : '') + '<div style="font-size:9px;color:var(--accent);margin-top:2px">Desbloquear</div></td>'; return '<td style="background:var(--bg-card);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--success);text-transform:uppercase;font-weight:700">livre</div></td>'; }).join(''); rows += '<tr style="' + (isH ? 'background:var(--accent-light)' : '') + '"><td style="background:var(--bg);padding:10px 14px;min-width:160px;border-right:2px solid var(--border)"><div style="font-size:10px;color:var(--fg-subtle)">' + f.ds + '</div><div style="font-size:14px;font-weight:700;color:var(--fg)">' + f.dia + ' de ' + f.mes + '</div></td>' + cells + '</tr>'; } c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Grade de Horarios</h1></div></div><div class="card animate-in" style="overflow:visible"><div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px"><button class="btn btn-secondary btn-sm" onclick="calMov(-1)">Anterior</button><span style="font-size:15px;font-weight:700">' + ML[m] + ' ' + a + '</span><button class="btn btn-secondary btn-sm" onclick="calMov(1)">Proximo</button></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="background:var(--bg);padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;min-width:160px;border-right:2px solid var(--border)">Data</th>' + HSEM.map(function(h) { return '<th style="background:linear-gradient(135deg,var(--accent),#3B82F6);color:white;padding:10px 12px;text-align:center;font-size:11px;font-weight:700">' + h + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div></div>'; showSidebar(false); }
     
     function showAgInfo(agId) {
       const ag = S.ags.find(function(a) { return a.id == agId; });
@@ -1005,7 +1005,48 @@
     }
     
     function calMov(d) { S.calMes.m += d; if (S.calMes.m > 11) { S.calMes.m = 0; S.calMes.a++; } if (S.calMes.m < 0) { S.calMes.m = 11; S.calMes.a--; } bCal(document.getElementById('CNT'), document.getElementById('SB')); }
-    function tBlq(s, h) { if (!S.grade[s]) S.grade[s] = {}; const sl = S.grade[s][h]; const wasBlocked = sl && sl.t === 'bl'; const newVal = wasBlocked ? { t: 'lv', tx: '' } : { t: 'bl', tx: 'Bloqueado' }; S.grade[s][h] = newVal; dbSaveGrade(s, h, newVal); bCal(document.getElementById('CNT'), document.getElementById('SB')); showToast(wasBlocked ? 'Horario desbloqueado!' : 'Horario bloqueado!', 'success'); }
+    function tBlq(s, h) { 
+      if (!S.grade[s]) S.grade[s] = {}; 
+      const sl = S.grade[s][h]; 
+      const wasBlocked = sl && sl.t === 'bl'; 
+      if (wasBlocked) {
+        // Desbloquear — sem confirmação necessária
+        const newVal = { t: 'lv', tx: '' };
+        S.grade[s][h] = newVal; 
+        dbSaveGrade(s, h, newVal); 
+        bCal(document.getElementById('CNT'), document.getElementById('SB')); 
+        showToast('Horario desbloqueado!', 'success');
+      } else {
+        // Bloquear — pede motivo
+        showPrompt('Motivo do bloqueio', 'Informe o motivo para bloquear este horário:', function(motivo) {
+          if (!motivo || !motivo.trim()) { showToast('Informe o motivo do bloqueio!', 'danger'); return; }
+          const newVal = { t: 'bl', tx: motivo.trim() };
+          S.grade[s][h] = newVal; 
+          dbSaveGrade(s, h, newVal); 
+          bCal(document.getElementById('CNT'), document.getElementById('SB')); 
+          showToast('Horario bloqueado!', 'success');
+        });
+      }
+    }
+
+    function showPrompt(titulo, mensagem, callback) {
+      const existing = document.getElementById('prompt-modal');
+      if (existing) existing.remove();
+      const modal = document.createElement('div');
+      modal.id = 'prompt-modal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+      modal.innerHTML = '<div style="background:var(--bg-card);border-radius:16px;padding:28px;width:400px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.3)">' +
+        '<h3 style="font-size:16px;font-weight:700;margin-bottom:8px">' + titulo + '</h3>' +
+        '<p style="font-size:13px;color:var(--fg-muted);margin-bottom:16px">' + mensagem + '</p>' +
+        '<input type="text" id="prompt-input" class="form-input" placeholder="Ex: Reunião, Feriado, Ausência..." style="margin-bottom:16px" onkeydown="if(event.key===\'Enter\')document.getElementById(\'prompt-ok\').click()">' +
+        '<div style="display:flex;gap:8px;justify-content:flex-end">' +
+          '<button class="btn btn-secondary" onclick="document.getElementById(\'prompt-modal\').remove()">Cancelar</button>' +
+          '<button class="btn btn-primary" id="prompt-ok" onclick="var v=document.getElementById(\'prompt-input\').value;document.getElementById(\'prompt-modal\').remove();(' + callback.toString() + ')(v)">Confirmar</button>' +
+        '</div>' +
+      '</div>';
+      document.body.appendChild(modal);
+      setTimeout(function() { const inp = document.getElementById('prompt-input'); if (inp) inp.focus(); }, 100);
+    }
     
     function rAg(c, sb) { S.SEL = { dia: null, hora: null }; S.AGRET = null; if (!S.selCal) { const n = new Date(); S.selCal = { a: n.getFullYear(), m: n.getMonth() }; } const now = new Date(), hh = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'), hoje = now.toISOString().split('T')[0], fhj = fex(hoje), rets = S.ags.filter(function(a) { return a.status === 'Aguardando retorno'; }); c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Agendamento</h1></div></div>' + sBar(0) + (rets.length ? '<div style="padding:16px 20px;background:var(--warning-light);border:1px solid rgba(217,119,6,0.2);border-radius:12px;margin-bottom:20px"><strong style="color:var(--warning)">' + rets.length + ' contrato(s)</strong> aguardando retorno<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">' + rets.map(function(a) { return '<button class="btn btn-warning btn-sm" onclick="selRet(\'' + a.id + '\')">Reagendar #' + a.contrato + '</button>'; }).join('') + '</div></div>' : '') + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px"><div><div class="card animate-in stagger-1" style="padding:24px"><h3 id="ag-title" style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:20px">Novo agendamento</h3><div class="form-group"><label class="form-label">Colaboradora</label><select class="form-input form-select" id="ag-col"><option value="">Selecionar</option>' + colabs().map(function(u) { return '<option>' + u.nome + '</option>'; }).join('') + '</select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="form-group"><label class="form-label">Data cadastro</label><input type="text" class="form-input" value="' + fhj.full + '" readonly style="background:var(--bg)"></div><div class="form-group"><label class="form-label">Hora</label><input type="text" class="form-input" value="' + hh + '" readonly style="background:var(--bg)"></div></div><div class="form-group"><label class="form-label">Contrato</label><input type="text" class="form-input" id="ag-c" placeholder="Ex: 26978"></div><div class="form-group"><label class="form-label">Endereco</label><input type="text" class="form-input" id="ag-e" placeholder="Rua, numero..."></div>' +
       // MELHORIA 6: Nome e Telefone separados
@@ -1043,10 +1084,14 @@
       const co = document.getElementById('ag-c').value.trim(), en = document.getElementById('ag-e').value.trim(), tp = document.getElementById('ag-t').value;
       const nomeInq = (document.getElementById('ag-nome') || {value:''}).value.trim();
       const telInq = (document.getElementById('ag-tel') || {value:''}).value.trim();
+      const colab = (document.getElementById('ag-col') || {value:''}).value;
+      const modal = (document.getElementById('ag-modal') || {value:''}).value;
       if (!co) { showToast('Informe o contrato', 'danger'); return; } 
       if (!en) { showToast('Informe o endereco', 'danger'); return; } 
       if (!nomeInq) { showToast('Informe o nome do inquilino', 'danger'); return; }
       if (!telInq) { showToast('Informe o telefone', 'danger'); return; }
+      if (!colab) { showToast('Selecione a colaboradora', 'danger'); return; }
+      if (!modal) { showToast('Selecione a modalidade da fiança', 'danger'); return; }
       if (!tp) { showToast('Selecione o tipo', 'danger'); return; } 
       const isAcompanhada = tp === 'acompanhada';
       const acompValue = isAcompanhada ? document.getElementById('ag-ac').value : '';
@@ -1442,7 +1487,12 @@
         }
         return true;
       });
-      const cnt = document.getElementById('orc-count');
+      // Ordena: vencidos primeiro (mais vencido para menos vencido), depois os no prazo (mais urgente primeiro)
+      filtered.sort(function(a, b) {
+        const da = getDiasOrc(a) !== null ? getDiasOrc(a) : 9999;
+        const db = getDiasOrc(b) !== null ? getDiasOrc(b) : 9999;
+        return da - db;
+      });
       if (cnt) cnt.textContent = filtered.length + ' de ' + reparos.length + ' contrato' + (reparos.length !== 1 ? 's' : '');
       const tbody = document.getElementById('orc-tbody');
       if (!tbody) return;
@@ -1763,6 +1813,7 @@
         '<div class="filter-bar">' +
           '<div class="search-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="search-input" id="meus-q" placeholder="Buscar por contrato ou endereço..." value="' + (meusFiltro.q||'') + '" oninput="meusBusca()"></div>' +
           '<select class="filter-select" id="meus-status" onchange="meusBusca()"><option value="">Todos os status</option><option value="Encerrar aluguel" ' + (meusFiltro.status==='Encerrar aluguel'?'selected':'') + '>Encerrar aluguel</option><option value="Pendente" ' + (meusFiltro.status==='Pendente'?'selected':'') + '>Pendente</option><option value="Em andamento" ' + (meusFiltro.status==='Em andamento'?'selected':'') + '>Em andamento</option></select>' +
+          '<select class="filter-select" id="meus-modal" onchange="meusBusca()"><option value="">Todas modalidades</option>' + MODAIS.map(function(m){ return '<option value="' + m + '">' + m + '</option>'; }).join('') + '</select>' +
           '<select class="filter-select" id="meus-prazo" onchange="meusBusca()"><option value="">Todos os prazos</option><option value="vencido" ' + (meusFiltro.prazo==='vencido'?'selected':'') + '>Vencidos</option><option value="alerta" ' + (meusFiltro.prazo==='alerta'?'selected':'') + '>Alerta (≤10d)</option><option value="ok" ' + (meusFiltro.prazo==='ok'?'selected':'') + '>No prazo</option></select>' +
           '<span class="filter-count" id="meus-count"></span>' +
           '<button class="btn btn-secondary btn-sm" onclick="meusLimpar()">Limpar</button>' +
@@ -1778,6 +1829,7 @@
       meusFiltro.q = (document.getElementById('meus-q')||{value:''}).value.toLowerCase();
       meusFiltro.status = (document.getElementById('meus-status')||{value:''}).value;
       meusFiltro.prazo = (document.getElementById('meus-prazo')||{value:''}).value;
+      meusFiltro.modal = (document.getElementById('meus-modal')||{value:''}).value;
       const n = S.user.nome;
 
       function calcPrazo(p) {
@@ -1793,6 +1845,7 @@
         const q = meusFiltro.q;
         if (q && !((p.contrato||'').toLowerCase().includes(q) || (p.end||'').toLowerCase().includes(q))) return false;
         if (meusFiltro.status && p.statusAcerto !== meusFiltro.status) return false;
+        if (meusFiltro.modal && p.modal !== meusFiltro.modal) return false;
         if (meusFiltro.prazo) {
           const d = calcPrazo(p);
           if (meusFiltro.prazo === 'vencido' && d >= 0) return false;
@@ -1838,10 +1891,11 @@
     }
 
     function meusLimpar() {
-      meusFiltro = { q: '', status: '', prazo: '' };
+      meusFiltro = { q: '', status: '', prazo: '', modal: '' };
       const q = document.getElementById('meus-q'); if (q) q.value = '';
       const s = document.getElementById('meus-status'); if (s) s.value = '';
       const p = document.getElementById('meus-prazo'); if (p) p.value = '';
+      const m = document.getElementById('meus-modal'); if (m) m.value = '';
       meusBusca();
     }
 
@@ -2354,7 +2408,116 @@
       if (cnt) cnt.textContent = vis + ' contrato' + (vis !== 1 ? 's' : '');
     }
 
-    // ── TAREFAS DA COLABORADORA ───────────────────────────────────────────────
+    // ── CONTRATOS DA EQUIPE ───────────────────────────────────────────────────
+    var equipeFiltro = { colab: '', status: '', prazo: '', q: '' };
+
+    function rEquipe(c, sb) {
+      const colabsNomes = colabs().map(function(u) { return u.nome; });
+      c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Contratos da Equipe</h1><p class="section-subtitle">Todos os contratos distribuídos</p></div></div>' +
+      '<div class="card animate-in">' +
+        '<div class="filter-bar">' +
+          '<div class="search-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="search-input" id="eq-q" placeholder="Buscar por contrato ou endereço..." oninput="equipeBusca()"></div>' +
+          '<select class="filter-select" id="eq-colab" onchange="equipeBusca()"><option value="">Todas as colaboradoras</option>' + colabsNomes.map(function(n) { return '<option value="' + n + '">' + n + '</option>'; }).join('') + '</select>' +
+          '<select class="filter-select" id="eq-status" onchange="equipeBusca()"><option value="">Todos os status</option><option value="Encerrar aluguel">Encerrar aluguel</option><option value="Pendente">Pendente</option><option value="Em andamento">Em andamento</option></select>' +
+          '<select class="filter-select" id="eq-prazo" onchange="equipeBusca()"><option value="">Todos os prazos</option><option value="vencido">Vencidos</option><option value="alerta">Alerta (≤10d)</option><option value="ok">No prazo</option></select>' +
+          '<span class="filter-count" id="eq-count"></span>' +
+          '<button class="btn btn-secondary btn-sm" onclick="equipeLimpar()">Limpar</button>' +
+        '</div>' +
+        '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereço</th><th>Modalidade</th><th>Colaboradora</th><th>Encerramento</th><th>Prazo</th><th>Status</th><th>Observação</th></tr></thead><tbody id="eq-tbody"></tbody></table></div>' +
+      '</div>';
+      showSidebar(false);
+      equipeBusca();
+    }
+
+    function equipeLimpar() {
+      ['eq-q','eq-colab','eq-status','eq-prazo'].forEach(function(id) { const el = document.getElementById(id); if (el) el.value = ''; });
+      equipeBusca();
+    }
+
+    function equipeBusca() {
+      const q = (document.getElementById('eq-q')||{value:''}).value.toLowerCase();
+      const colab = (document.getElementById('eq-colab')||{value:''}).value;
+      const status = (document.getElementById('eq-status')||{value:''}).value;
+      const prazo = (document.getElementById('eq-prazo')||{value:''}).value;
+
+      function calcPrazoEq(p) {
+        if (!p.enc) return 99999;
+        const prazoDias = (p.modal === 'CredAluga' || p.modal === 'Loft' || p.modal === 'Seguro Fianca') ? 30 : 45;
+        return diasR(adD(p.enc, prazoDias));
+      }
+
+      let todos = S.prots.filter(function(p) {
+        return p.colabDist && p.colabDist !== '' && p.colabDist !== 'Ja distribuido' && p.statusAcerto !== 'Finalizado';
+      });
+
+      if (q) todos = todos.filter(function(p) { return (p.contrato||'').toLowerCase().includes(q) || (p.end||'').toLowerCase().includes(q); });
+      if (colab) todos = todos.filter(function(p) { return p.colabDist === colab; });
+      if (status) todos = todos.filter(function(p) { return p.statusAcerto === status; });
+      if (prazo) {
+        todos = todos.filter(function(p) {
+          const d = calcPrazoEq(p);
+          if (prazo === 'vencido') return d < 0;
+          if (prazo === 'alerta') return d >= 0 && d <= 10;
+          if (prazo === 'ok') return d > 10;
+          return true;
+        });
+      }
+
+      todos.sort(function(a, b) { return calcPrazoEq(a) - calcPrazoEq(b); });
+
+      const cnt = document.getElementById('eq-count');
+      if (cnt) cnt.textContent = todos.length + ' contrato' + (todos.length !== 1 ? 's' : '');
+
+      const tbody = document.getElementById('eq-tbody');
+      if (!tbody) return;
+
+      if (!todos.length) {
+        tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><p>Nenhum contrato encontrado.</p></div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = todos.map(function(p) {
+        const d = calcPrazoEq(p);
+        let alertClass = 'prazo-ok', txt = '';
+        if (d === 99999) { txt = 'Sem data'; alertClass = ''; }
+        else if (d < 0) { txt = 'Vencido ' + Math.abs(d) + 'd'; alertClass = 'prazo-vencido'; }
+        else { txt = d + 'd'; if (d <= 10) alertClass = 'prazo-alerta'; }
+        const encFormatted = p.enc ? p.enc.split('-').reverse().join('/') : '-';
+        let rowStyle = '';
+        if (d < 0) rowStyle = 'background:rgba(220,38,38,0.05)';
+        else if (d <= 7 && d >= 0) rowStyle = 'background:rgba(217,119,6,0.05)';
+
+        return '<tr style="' + rowStyle + '">' +
+          '<td><span class="badge badge-primary">' + p.contrato + '</span></td>' +
+          '<td style="font-weight:600;max-width:200px">' + p.end + '</td>' +
+          '<td><span class="badge badge-neutral">' + (p.modal||'-') + '</span></td>' +
+          '<td><span style="font-weight:600">' + p.colabDist + '</span></td>' +
+          '<td style="white-space:nowrap">' + encFormatted + '</td>' +
+          '<td>' + (alertClass ? '<div class="prazo-alert ' + alertClass + '">' + txt + '</div>' : '<span style="color:var(--fg-subtle)">' + txt + '</span>') + '</td>' +
+          '<td><select class="form-input form-select" style="width:145px" onchange="upEquipeSt(\'' + p.id + '\',this.value)"><option ' + (p.statusAcerto==='Encerrar aluguel'?'selected':'') + '>Encerrar aluguel</option><option ' + (p.statusAcerto==='Pendente'?'selected':'') + '>Pendente</option><option ' + (p.statusAcerto==='Em andamento'?'selected':'') + '>Em andamento</option><option value="Finalizado">Finalizado</option></select></td>' +
+          '<td style="min-width:220px"><textarea class="form-input" onchange="upEquipeObs(\'' + p.id + '\',this.value)" placeholder="Observação..." style="min-height:60px;resize:vertical;font-size:12px">' + (p.obs||'') + '</textarea></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function upEquipeSt(id, v) {
+      const p = S.prots.find(function(x) { return x.id == id; });
+      if (!p) return;
+      if (v === 'Pendente' && p.statusAcerto !== 'Pendente') p.dataPendente = new Date().toISOString().split('T')[0];
+      p.statusAcerto = v;
+      addLog(p.contrato, 'Status alterado para "' + v + '" (via Equipe)', 'Por: ' + (S.user ? S.user.nome : '—'));
+      dbSaveProt(p);
+      showToast('Status atualizado!', 'success');
+      if (v === 'Finalizado') equipeBusca();
+    }
+
+    function upEquipeObs(id, v) {
+      const p = S.prots.find(function(x) { return x.id == id; });
+      if (!p) return;
+      p.obs = v;
+      dbSaveProt(p);
+      showToast('Observação salva!', 'success');
+    }
     function rTarefas(c, sb) {
       const n = S.user.nome;
       // Tarefas salvas no localStorage — privadas, só do navegador da colaboradora
