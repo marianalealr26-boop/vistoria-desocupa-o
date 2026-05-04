@@ -1493,6 +1493,7 @@
         const db = getDiasOrc(b) !== null ? getDiasOrc(b) : 9999;
         return da - db;
       });
+      const cnt = document.getElementById('orc-count');
       if (cnt) cnt.textContent = filtered.length + ' de ' + reparos.length + ' contrato' + (reparos.length !== 1 ? 's' : '');
       const tbody = document.getElementById('orc-tbody');
       if (!tbody) return;
