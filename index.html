@@ -1032,20 +1032,30 @@
     function showPrompt(titulo, mensagem, callback) {
       const existing = document.getElementById('prompt-modal');
       if (existing) existing.remove();
+      window._promptCallback = callback;
       const modal = document.createElement('div');
       modal.id = 'prompt-modal';
       modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
       modal.innerHTML = '<div style="background:var(--bg-card);border-radius:16px;padding:28px;width:400px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.3)">' +
         '<h3 style="font-size:16px;font-weight:700;margin-bottom:8px">' + titulo + '</h3>' +
         '<p style="font-size:13px;color:var(--fg-muted);margin-bottom:16px">' + mensagem + '</p>' +
-        '<input type="text" id="prompt-input" class="form-input" placeholder="Ex: Reunião, Feriado, Ausência..." style="margin-bottom:16px" onkeydown="if(event.key===\'Enter\')document.getElementById(\'prompt-ok\').click()">' +
+        '<input type="text" id="prompt-input" class="form-input" placeholder="Ex: Reunião, Feriado, Ausência..." style="margin-bottom:16px" onkeydown="if(event.key===\'Enter\')promptConfirmar()">' +
         '<div style="display:flex;gap:8px;justify-content:flex-end">' +
-          '<button class="btn btn-secondary" onclick="document.getElementById(\'prompt-modal\').remove()">Cancelar</button>' +
-          '<button class="btn btn-primary" id="prompt-ok" onclick="var v=document.getElementById(\'prompt-input\').value;document.getElementById(\'prompt-modal\').remove();(' + callback.toString() + ')(v)">Confirmar</button>' +
+          '<button class="btn btn-secondary" onclick="document.getElementById(\'prompt-modal\').remove();window._promptCallback=null">Cancelar</button>' +
+          '<button class="btn btn-primary" id="prompt-ok" onclick="promptConfirmar()">Confirmar</button>' +
         '</div>' +
       '</div>';
       document.body.appendChild(modal);
       setTimeout(function() { const inp = document.getElementById('prompt-input'); if (inp) inp.focus(); }, 100);
+    }
+
+    function promptConfirmar() {
+      const v = (document.getElementById('prompt-input')||{value:''}).value;
+      const cb = window._promptCallback;
+      const modal = document.getElementById('prompt-modal');
+      if (modal) modal.remove();
+      window._promptCallback = null;
+      if (cb) cb(v);
     }
     
     function rAg(c, sb) { S.SEL = { dia: null, hora: null }; S.AGRET = null; if (!S.selCal) { const n = new Date(); S.selCal = { a: n.getFullYear(), m: n.getMonth() }; } const now = new Date(), hh = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'), hoje = now.toISOString().split('T')[0], fhj = fex(hoje), rets = S.ags.filter(function(a) { return a.status === 'Aguardando retorno'; }); c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Agendamento</h1></div></div>' + sBar(0) + (rets.length ? '<div style="padding:16px 20px;background:var(--warning-light);border:1px solid rgba(217,119,6,0.2);border-radius:12px;margin-bottom:20px"><strong style="color:var(--warning)">' + rets.length + ' contrato(s)</strong> aguardando retorno<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">' + rets.map(function(a) { return '<button class="btn btn-warning btn-sm" onclick="selRet(\'' + a.id + '\')">Reagendar #' + a.contrato + '</button>'; }).join('') + '</div></div>' : '') + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px"><div><div class="card animate-in stagger-1" style="padding:24px"><h3 id="ag-title" style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:20px">Novo agendamento</h3><div class="form-group"><label class="form-label">Colaboradora</label><select class="form-input form-select" id="ag-col"><option value="">Selecionar</option>' + colabs().map(function(u) { return '<option>' + u.nome + '</option>'; }).join('') + '</select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="form-group"><label class="form-label">Data cadastro</label><input type="text" class="form-input" value="' + fhj.full + '" readonly style="background:var(--bg)"></div><div class="form-group"><label class="form-label">Hora</label><input type="text" class="form-input" value="' + hh + '" readonly style="background:var(--bg)"></div></div><div class="form-group"><label class="form-label">Contrato</label><input type="text" class="form-input" id="ag-c" placeholder="Ex: 26978"></div><div class="form-group"><label class="form-label">Endereco</label><input type="text" class="form-input" id="ag-e" placeholder="Rua, numero..."></div>' +
