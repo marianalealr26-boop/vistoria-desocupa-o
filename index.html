@@ -1497,8 +1497,12 @@
         }
         return true;
       });
-      // Ordena: vencidos primeiro (mais vencido para menos vencido), depois os no prazo (mais urgente primeiro)
+      // Ordena: vencidos primeiro, depois por prazo, finalizados sempre no final
       filtered.sort(function(a, b) {
+        const aFin = a.statusOrc === 'Finalizado';
+        const bFin = b.statusOrc === 'Finalizado';
+        if (aFin && !bFin) return 1;
+        if (!aFin && bFin) return -1;
         const da = getDiasOrc(a) !== null ? getDiasOrc(a) : 9999;
         const db = getDiasOrc(b) !== null ? getDiasOrc(b) : 9999;
         return da - db;
@@ -2342,7 +2346,7 @@
         else { contratos[p.contrato].statusVist = p.statusVist; if (!contratos[p.contrato].modal) contratos[p.contrato].modal = p.modal; }
       });
       const lista = Object.values(contratos).sort(function(a, b) { return (b.dataAg||'').localeCompare(a.dataAg||''); });
-      const canEdit = S.user && (S.user.role === 'colaboradora' || S.user.role === 'admin' || S.user.role === 'gestor_vistoria' || S.user.role === 'gestora_desocupacao');
+      const canEdit = S.user && (S.user.role === 'colaboradora' || S.user.role === 'admin' || S.user.role === 'gestor_vistoria' || S.user.role === 'gestora_desocupacao' || S.user.role === 'seguro_fianca');
       const modalBadge = function(m) {
         if (m === 'CredAluga') return '<span class="badge badge-primary">CredAluga</span>';
         if (m === 'Loft') return '<span class="badge badge-warning">Loft</span>';
@@ -2637,6 +2641,30 @@
       showToast('Tarefas concluídas removidas!', 'success');
     }
 
+    function fazerBackup() {
+      showToast('Gerando backup...', 'success');
+      const backup = {
+        data: new Date().toISOString(),
+        versao: '1.0',
+        agendamentos: S.ags,
+        protocolos: S.prots,
+        finalizados: S.fins,
+        usuarios: S.users,
+        logs: S.logs,
+        grade: S.grade
+      };
+      const json = JSON.stringify(backup, null, 2);
+      const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const hoje = new Date().toISOString().split('T')[0];
+      a.href = url;
+      a.download = 'casanova-backup-' + hoje + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Backup salvo com sucesso!', 'success');
+    }
+
     function rAdm(c, sb) {
       if (!S.user || S.user.role !== 'admin') {
         c.innerHTML = '<div class="card animate-in" style="padding:48px;text-align:center"><h2 style="color:var(--danger);margin-bottom:16px">Acesso Negado</h2><p style="color:var(--fg-muted)">Apenas administradores podem acessar esta pagina.</p></div>';
@@ -2644,7 +2672,9 @@
         return;
       }
 
-      c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Administracao</h1></div></div>' +
+      c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Administracao</h1></div>' +
+      '<button class="btn btn-success" onclick="fazerBackup()" style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Backup dos Dados</button>' +
+      '</div>' +
       '<div class="card animate-in" style="padding:24px; margin-bottom:24px">' +
         '<h3 id="adm-form-title" style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:20px">Cadastrar Novo Usuario</h3>' +
         '<input type="hidden" id="adm-edit-id" value="">' +
