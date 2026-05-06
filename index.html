@@ -759,7 +759,7 @@
         const datRef = a.dataCad || a.data;
         const horaRef = a.horaCad || '08:00';
         const horas = horasUteisPassadas(datRef, horaRef, a.id);
-        return horas > 48;
+        return horas >= 48;
       }).sort(function(a, b) {
         const hA = horasUteisPassadas(a.dataCad || a.data, a.horaCad || '08:00', a.id);
         const hB = horasUteisPassadas(b.dataCad || b.data, b.horaCad || '08:00', b.id);
