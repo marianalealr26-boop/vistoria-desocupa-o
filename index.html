@@ -482,8 +482,8 @@
     // Converte objeto interno → linha do banco
     function agToRow(a) { return { id: a.id, contrato: a.contrato, colab: a.colab, data_cad: a.dataCad, hora_cad: a.horaCad, data: a.data, hora_sel: a.horaSel, nome_inq: a.nomeInq||'', telefone: a.telefone||'', contato: a.contato||'', end_imovel: a.end, tipo: a.tipo, acomp: a.acomp, obs: a.obs, vistoriador: a.vistoriador||'', status: a.status, vinc: a.vinc||null, modal: a.modal||'', chaves_informadas: a.chavesInformadas||'Nao', responsavel_fianca: a.responsavelFianca||'' }; }
     function rowToAg(r) { return { id: r.id, contrato: r.contrato, colab: r.colab, dataCad: r.data_cad, horaCad: r.hora_cad, data: r.data, horaSel: r.hora_sel, nomeInq: r.nome_inq, telefone: r.telefone, contato: r.contato, end: r.end_imovel, tipo: r.tipo, acomp: r.acomp, obs: r.obs, vistoriador: r.vistoriador, status: r.status, vinc: r.vinc, modal: r.modal||'', chavesInformadas: r.chaves_informadas||'Nao', responsavelFianca: r.responsavel_fianca||'' }; }
-    function protToRow(p) { return { id: p.id, ag_id: p.agId, contrato: p.contrato, end_imovel: p.end, data: p.data, modal: p.modal, status_vist: p.statusVist, enc: p.enc, limite: p.limite||'', laudo: p.laudo, laudo_pendente: p.laudoPendente||false, colab_dist: p.colabDist||'', status_acerto: p.statusAcerto||'', data_pendente: p.dataPendente||null, obs: p.obs||'', status_orc: p.statusOrc||'Aguardando orcamento', obs_orc: p.obsOrc||'', notas: JSON.stringify(p.notas||[]) }; }
-    function rowToProt(r) { let notas = []; try { notas = JSON.parse(r.notas||'[]'); } catch(e) {} return { id: r.id, agId: r.ag_id, contrato: r.contrato, end: r.end_imovel, data: r.data, modal: r.modal, statusVist: r.status_vist, enc: r.enc, limite: r.limite, laudo: r.laudo, laudoPendente: r.laudo_pendente||false, colabDist: r.colab_dist, statusAcerto: r.status_acerto, dataPendente: r.data_pendente, obs: r.obs, statusOrc: r.status_orc, obsOrc: r.obs_orc, notas: notas }; }
+    function protToRow(p) { return { id: p.id, ag_id: p.agId, contrato: p.contrato, end_imovel: p.end, data: p.data, modal: p.modal, status_vist: p.statusVist, enc: p.enc, limite: p.limite||'', laudo: p.laudo, laudo_pendente: p.laudoPendente||false, colab_dist: p.colabDist||'', data_dist: p.dataDist||'', status_acerto: p.statusAcerto||'', data_pendente: p.dataPendente||null, obs: p.obs||'', status_orc: p.statusOrc||'Aguardando orcamento', obs_orc: p.obsOrc||'', notas: JSON.stringify(p.notas||[]), data_registro: p.dataRegistro||'', registrado_por: p.registradoPor||'' }; }
+    function rowToProt(r) { let notas = []; try { notas = JSON.parse(r.notas||'[]'); } catch(e) {} return { id: r.id, agId: r.ag_id, contrato: r.contrato, end: r.end_imovel, data: r.data, modal: r.modal, statusVist: r.status_vist, enc: r.enc, limite: r.limite, laudo: r.laudo, laudoPendente: r.laudo_pendente||false, colabDist: r.colab_dist, dataDist: r.data_dist||'', statusAcerto: r.status_acerto, dataPendente: r.data_pendente, obs: r.obs, statusOrc: r.status_orc, obsOrc: r.obs_orc, notas: notas, dataRegistro: r.data_registro||'', registradoPor: r.registrado_por||'' }; }
     function finToRow(f) { return { id: f.id, contrato: f.contrato, end_imovel: f.end, modal: f.modal||'', data: f.data, data_pendente: f.dataPendente||null, obs: f.obs||'', finalizado_por: f.finalizadoPor||'' }; }
     function rowToFin(r) { return { id: r.id, contrato: r.contrato, end: r.end_imovel, modal: r.modal, data: r.data, dataPendente: r.data_pendente, obs: r.obs, finalizadoPor: r.finalizado_por||'' }; }
     function logToRow(l) { return { id: l.id, contrato: l.contrato, usuario: l.usuario, acao: l.acao, detalhe: l.detalhe||'', data: l.data, hora: l.hora, ts: l.ts }; }
@@ -1370,16 +1370,17 @@
     
     function rProt(c, sb) { 
       const conc = S.ags.filter(function(a) { return a.status === 'Concluido'; });
-      // Separa pendentes e registrados — registrados vão para o final
       const pendentes = conc.filter(function(a) { return !S.prots.find(function(p) { return p.agId === a.id; }); });
       const registrados = conc.filter(function(a) { return S.prots.find(function(p) { return p.agId === a.id; }); });
       const ordenados = pendentes.concat(registrados);
       c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Protocolo de Chaves</h1></div></div>' + sBar(2) + 
       '<div class="card animate-in"><div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:12px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase">Vistorias Encerradas</h3><div style="font-size:12px;color:var(--fg-subtle)"><span style="color:var(--warning);font-weight:600">' + pendentes.length + ' pendentes</span> · <span style="color:var(--success);font-weight:600">' + registrados.length + ' registrados</span></div></div>' + 
-      (ordenados.length ? '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereco</th><th>Protocolo</th><th>Acao</th></tr></thead><tbody>' + 
+      (ordenados.length ? '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereco</th><th>Protocolo</th><th>Registrado em</th><th>Registrado por</th><th>Acao</th></tr></thead><tbody>' + 
       ordenados.map(function(a) { 
-        const tem = S.prots.find(function(p) { return p.agId === a.id; }); 
-        return '<tr style="' + (tem ? 'opacity:0.7' : '') + '"><td><span class="badge badge-primary">' + a.contrato + '</span></td><td style="font-weight:600">' + a.end + '</td><td>' + (tem ? '<span class="badge badge-success">Registrado</span>' : '<span class="badge badge-warning">Pendente</span>') + '</td><td>' + (tem ? '' : '<button class="btn btn-primary btn-sm" onclick="aPk(\'' + a.id + '\')">Preencher</button>') + '</td></tr>'; 
+        const prot = S.prots.find(function(p) { return p.agId === a.id; });
+        const dataReg = prot && prot.dataRegistro ? fmtData(prot.dataRegistro) : '—';
+        const regPor = prot && prot.registradoPor ? prot.registradoPor : '—';
+        return '<tr style="' + (prot ? 'opacity:0.7' : '') + '"><td><span class="badge badge-primary">' + a.contrato + '</span></td><td style="font-weight:600">' + a.end + '</td><td>' + (prot ? '<span class="badge badge-success">Registrado</span>' : '<span class="badge badge-warning">Pendente</span>') + '</td><td style="font-size:12px;color:var(--fg-muted)">' + dataReg + '</td><td style="font-size:12px;color:var(--fg-muted)">' + regPor + '</td><td>' + (prot ? '' : '<button class="btn btn-primary btn-sm" onclick="aPk(\'' + a.id + '\')">Preencher</button>') + '</td></tr>'; 
       }).join('') + '</tbody></table></div>' : '<p style="padding:24px;color:var(--fg-subtle)">Nenhuma vistoria encerrada.</p>') + '</div><div id="pkf"></div>'; 
       showSidebar(false); 
     }
@@ -1419,7 +1420,9 @@
         id: Date.now(), agId: ag.id, contrato: ag.contrato, end: ag.end,
         data: document.getElementById('pk-dt').value, modal: m, statusVist: sv,
         enc: enc, limite: enc && PRAZO[m] ? adD(enc, PRAZO[m]) : '', laudo: la,
-        laudoPendente: laudoPendente, // novo campo
+        laudoPendente: laudoPendente,
+        dataRegistro: new Date().toISOString().split('T')[0],
+        registradoPor: S.user ? S.user.nome : '—',
         colabDist: '', statusAcerto: '', obs: '', statusOrc: 'Aguardando orcamento', obsOrc: ''
       };
 
@@ -1752,10 +1755,10 @@
       // Distribuídos — separado para permitir lógica antes da string
       const canChangeColab = S.user && (S.user.role === 'admin' || S.user.role === 'gestora_desocupacao');
 
-      // Agrupa distribuídos por data de distribuição
+      // Agrupa distribuídos por data de distribuição (dataDist) — não pela data do protocolo
       const grupos = {};
       dist.forEach(function(p) {
-        const dia = p.data || 'Sem data';
+        const dia = p.dataDist || p.data || 'Sem data';
         if (!grupos[dia]) grupos[dia] = [];
         grupos[dia].push(p);
       });
@@ -1796,7 +1799,9 @@
       if (!colab) return;
       const p = S.prots.find(function(x) { return x.id == id; });
       if (p) {
-        p.colabDist = colab; p.statusAcerto = 'Encerrar aluguel';
+        p.colabDist = colab;
+        p.dataDist = new Date().toISOString().split('T')[0];
+        p.statusAcerto = 'Encerrar aluguel';
         addLog(p.contrato, 'Distribuido manualmente para ' + colab, (p.statusVist === 'Reparos pendentes' ? 'Reparos pendentes' : 'Vistoria aprovada') + ' | ' + (p.modal || '-'));
         dbSaveProt(p);
         showToast('Contrato atribuido a ' + colab + ' com sucesso!', 'success');
@@ -1861,6 +1866,7 @@
 
         const escolhida = scores[0];
         p.colabDist = escolhida.nome;
+        p.dataDist = new Date().toISOString().split('T')[0];
         p.statusAcerto = 'Encerrar aluguel';
         addLog(p.contrato, 'Distribuido automaticamente para ' + escolhida.nome,
           (isReparo ? 'Reparos pendentes' : 'Vistoria aprovada') + ' | ' + (modal || '-'));
@@ -1887,6 +1893,8 @@
       const p = S.prots.find(function(x) { return x.id == id; });
       if (!p || !novaColab) return;
       const anterior = p.colabDist;
+      p.colabDist = novaColab;
+      p.dataDist = new Date().toISOString().split('T')[0];
       p.colabDist = novaColab;
       addLog(p.contrato, 'Colaboradora alterada: ' + anterior + ' → ' + novaColab, 'Por: ' + (S.user ? S.user.nome : '—'));
       dbSaveProt(p);
