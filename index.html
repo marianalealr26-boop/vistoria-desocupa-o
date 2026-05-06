@@ -313,6 +313,26 @@
     const HSEM = ['09:30', '11:00', '14:30', '16:00'];
     const HSAB = ['09:30', '11:00'];
     const MODAIS = ['CredAluga', 'Loft', 'Seguro Fianca', 'Caucao', 'Fiador', 'Sem fiador', 'Carta fianca', 'Titulo capitalizacao', 'Vello'];
+    const MOTIVOS_DESOC = [
+      'Atrito Com Vizinhos',
+      'Falecimento de Uma das Partes',
+      'Fechando a Empresa/Comercio',
+      'Foi Desligado do Emprego (Demissao)',
+      'Imissao de Posse/Despejado Judicialmente',
+      'Inadimplencia',
+      'Inquilino Comprou Imovel Proprio',
+      'Inquilino Mudou-se de Cidade',
+      'Insatisfacao Com a Casa Nova',
+      'Insatisfacao Com o Imovel',
+      'Localizacao',
+      'Nao Declarou/Nao Coletou a Resposta',
+      'Outros',
+      'Por Motivos de Saude',
+      'Proprietario Colocou o Imovel a Venda',
+      'Proprietario Pediu Imovel',
+      'Separacao Conjugal',
+      'Situacao Financeira/Valor do Aluguel Alto'
+    ];
     const PRAZO = { 'CredAluga': 10, 'Loft': 10, 'Seguro Fianca': 10 };
     const DPT = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
     const DC = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
@@ -578,6 +598,7 @@
       if (f.role === 'admin') roleName = 'Administrador';
       else if (f.role === 'gestor_vistoria') roleName = 'Gestor Vistoria';
       else if (f.role === 'gestora_desocupacao') roleName = 'Gestora Desocupacao';
+      else if (f.role === 'gestor_operacional') roleName = 'Gestor Operacional';
       else if (f.role === 'colaboradora') roleName = 'Colaboradora';
       else if (f.role === 'vistoriador') roleName = 'Vistoriador';
       else if (f.role === 'seguro_fianca') roleName = 'Seguro Fianca';
@@ -586,6 +607,7 @@
       if (f.role === 'admin') goTab('d1');
       else if (f.role === 'gestor_vistoria') goTab('d1');
       else if (f.role === 'gestora_desocupacao') goTab('d2');
+      else if (f.role === 'gestor_operacional') goTab('d1');
       else if (f.role === 'vistoriador') goTab('vist');
       else if (f.role === 'seguro_fianca') goTab('fianca');
       else goTab('meus');
@@ -645,13 +667,14 @@
       document.getElementById('MAIN').style.display = 'none';
     }
     
-    const TABS_ADM = [['d1', 'Dashboard'], ['d2', 'Desocupacao'], ['hor', 'Horarios'], ['ag', 'Agendamento'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca'], ['adm', 'Admin']];
-    const TABS_GESTOR_VIST = [['d1', 'Dashboard'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['busca', '🔍 Busca'], ['hist', 'Historico']];
-    const TABS_GESTORA_DESOC = [['d2', 'Desocupacao'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca']];
-    const TABS_COL = [['meus', 'Meus Contratos'], ['tarefas', '✓ Tarefas'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['fin', 'Finalizados'], ['busca', '🔍 Busca']];
-    const TABS_VIS = [['vist', 'Vistoriador'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['prot', 'Protocolo'], ['laud', 'Laudos']];
-    const TABS_FIANCA = [['fianca', 'Contratos Fianca']];
-    const PFN = { d1: rD1, d2: rD2, hor: rHor, ag: rAg, vist: rVist, prot: rProt, laud: rLaud, orc: rOrc, dist: rDist, fin: rFin, adm: rAdm, meus: rMeus, busca: rBusca, hist: rHist, fianca: rFianca, rel: rRelatorio, tarefas: rTarefas, equipe: rEquipe };
+    const TABS_ADM = [['d1', 'Dashboard'], ['d2', 'Desocupacao'], ['hor', 'Horarios'], ['ag', 'Agendamento'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca'], ['adm', 'Admin']];
+    const TABS_GESTOR_VIST = [['d1', 'Dashboard'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico']];
+    const TABS_GESTORA_DESOC = [['d2', 'Desocupacao'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca']];
+    const TABS_GESTOR_OP = [['d1', 'Dashboard Vistoria'], ['d2', 'Dashboard Desocupacao'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['equipe', 'Contratos Equipe'], ['desoc', '📋 Desocupacoes']];
+    const TABS_COL = [['meus', 'Meus Contratos'], ['tarefas', '✓ Tarefas'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['fin', 'Finalizados'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca']];
+    const TABS_VIS = [['vist', 'Vistoriador'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['desoc', '📋 Desocupacoes']];
+    const TABS_FIANCA = [['fianca', 'Contratos Fianca'], ['desoc', '📋 Desocupacoes']];
+    const PFN = { d1: rD1, d2: rD2, hor: rHor, ag: rAg, vist: rVist, prot: rProt, laud: rLaud, orc: rOrc, dist: rDist, fin: rFin, adm: rAdm, meus: rMeus, busca: rBusca, hist: rHist, fianca: rFianca, rel: rRelatorio, tarefas: rTarefas, equipe: rEquipe, desoc: rDesoc };
     
     function buildNav() { 
       const nav = document.getElementById('NAV'); 
@@ -660,6 +683,7 @@
       if (S.user.role === 'admin') tabs = TABS_ADM;
       else if (S.user.role === 'gestor_vistoria') tabs = TABS_GESTOR_VIST;
       else if (S.user.role === 'gestora_desocupacao') tabs = TABS_GESTORA_DESOC;
+      else if (S.user.role === 'gestor_operacional') tabs = TABS_GESTOR_OP;
       else if (S.user.role === 'vistoriador') tabs = TABS_VIS;
       else if (S.user.role === 'seguro_fianca') tabs = TABS_FIANCA;
       else tabs = TABS_COL;
@@ -677,12 +701,36 @@
     }
     function sBar(a) { const ss = [['1', 'Agendamento'], ['2', 'Vistoriador'], ['3', 'Protocolo'], ['4', 'Orcamentos'], ['5', 'Distribuicao'], ['6', 'Finalizado']]; return '<div class="step-indicator">' + ss.map(function(s, i) { return '<div class="step-item ' + (i < a ? 'completed' : i === a ? 'active' : '') + '"><div class="step-number">' + (i < a ? '✓' : s[0]) + '</div><span>' + s[1] + '</span></div>' + (i < 5 ? '<span class="step-arrow">→</span>' : ''); }).join('') + '</div>'; }
     
+    function horasUteisPassadas(dataCad, horaCad) {
+      if (!dataCad) return 0;
+      const inicio = new Date(dataCad + 'T' + (horaCad || '08:00') + ':00');
+      const agora = new Date();
+      let horas = 0;
+      let cursor = new Date(inicio);
+      while (cursor < agora) {
+        const diaSemana = cursor.getDay(); // 0=dom, 6=sab
+        if (diaSemana !== 0 && diaSemana !== 6) {
+          horas++;
+        }
+        cursor = new Date(cursor.getTime() + 3600000); // +1 hora
+      }
+      return horas;
+    }
+
     function rD1(c, sb) { 
       const pend = S.ags.filter(function(a) { return a.status === 'Aguardando'; }).length;
       const atrib = S.ags.filter(function(a) { return a.status === 'Atribuido'; }).length;
       const conc = S.ags.filter(function(a) { return a.status === 'Concluido'; }).length;
       const ret = S.ags.filter(function(a) { return a.status === 'Aguardando retorno'; }).length;
       const reparos = S.prots.filter(function(p) { return p.statusVist === 'Reparos pendentes'; }).length;
+
+      // Pastas paradas há mais de 48 horas úteis
+      const paradas48 = S.ags.filter(function(a) {
+        if (a.status !== 'Aguardando' && a.status !== 'Atribuido') return false;
+        return horasUteisPassadas(a.dataCad || a.data, a.horaCad) > 48;
+      }).sort(function(a, b) {
+        return horasUteisPassadas(b.dataCad || b.data, b.horaCad) - horasUteisPassadas(a.dataCad || a.data, a.horaCad);
+      });
       
       const vistoriadores = vists().map(function(v) {
         const aguardando = S.ags.filter(function(a) { return a.vistoriador === v.nome && a.status === 'Aguardando'; }).length;
@@ -792,6 +840,33 @@
             prazoHtml + '</div>';
         }).join('') +
         (laudosPend.length > 6 ? '<div style="padding:8px 16px;font-size:11px;color:var(--danger);text-align:center">+ ' + (laudosPend.length - 6) + ' pendentes — ver em Laudos</div>' : '') +
+        '</div>' +
+      '</div>'
+      : '') +
+
+      // Painel de pastas paradas há mais de 48h úteis
+      (paradas48.length ?
+      '<div class="card animate-in" style="margin-bottom:20px;border:2px solid var(--warning)">' +
+        '<div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">' +
+          '<div style="display:flex;align-items:center;gap:10px">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+            '<h3 style="font-size:13px;font-weight:700;color:var(--fg);text-transform:uppercase">Pastas Paradas +48h Úteis</h3>' +
+            '<span class="badge badge-warning">' + paradas48.length + ' parada' + (paradas48.length !== 1 ? 's' : '') + '</span>' +
+          '</div>' +
+          '<button class="btn btn-primary btn-sm" onclick="goTab(\'vist\')">Ver Vistoriador →</button>' +
+        '</div>' +
+        '<div style="max-height:250px;overflow-y:auto">' +
+        paradas48.map(function(a) {
+          const horas = horasUteisPassadas(a.dataCad || a.data, a.horaCad);
+          const dias = Math.floor(horas / 8);
+          const tempoTxt = dias > 0 ? dias + 'd ' + (horas % 8) + 'h úteis' : horas + 'h úteis';
+          return '<div class="colab-row" style="background:rgba(217,119,6,0.05)">' +
+            '<span class="badge badge-primary">' + a.contrato + '</span>' +
+            '<div style="flex:1;margin-left:10px"><div style="font-weight:600;font-size:13px">' + a.end + '</div>' +
+            '<div style="font-size:11px;color:var(--fg-muted)">' + (a.vistoriador || 'Sem vistoriador') + ' · Cadastro: ' + fmtData(a.dataCad || a.data) + '</div></div>' +
+            '<div class="prazo-alert prazo-alerta">⏱ ' + tempoTxt + '</div>' +
+          '</div>';
+        }).join('') +
         '</div>' +
       '</div>'
       : '') +
@@ -916,6 +991,7 @@
 
       c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Dashboard Desocupacao</h1><p class="section-subtitle">Visao geral do processo de desocupacao</p></div></div>' +
 
+      // Cards de status
       '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px">' +
         '<div class="stat-card animate-in stagger-1" style="' + (aguardandoDist > 0 ? 'border:2px solid var(--warning)' : '') + '"><div class="stat-icon stat-icon-amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="12"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-content"><div class="stat-value" style="' + (aguardandoDist > 0 ? 'color:var(--warning)' : '') + '" onclick="goTab(\'dist\')" style="cursor:pointer">' + aguardandoDist + '</div><div class="stat-label">A distribuir</div></div></div>' +
         '<div class="stat-card animate-in stagger-2"><div class="stat-icon stat-icon-blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><div class="stat-content"><div class="stat-value">' + encerrar + '</div><div class="stat-label">Encerrar aluguel</div></div></div>' +
@@ -924,20 +1000,14 @@
         '<div class="stat-card animate-in stagger-5"><div class="stat-icon" style="background:rgba(139,92,246,0.12);color:#7C3AED"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="stat-content"><div class="stat-value">' + finalizado + '</div><div class="stat-label">Finalizado</div></div></div>' +
       '</div>' +
 
+      // Métricas
       '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">' +
         '<div class="metric-card animate-in stagger-5" style="border-left:4px solid var(--success)"><div class="metric-label">Finalizados no mes</div><div class="metric-value" style="color:var(--success)">' + finMes + '</div></div>' +
         '<div class="metric-card animate-in stagger-5" style="border-left:4px solid var(--danger)"><div class="metric-label">Alerta de prazo</div><div class="metric-value" style="color:var(--danger)">' + alertaPrazo.length + '<span style="font-size:14px;color:var(--fg-muted);margin-left:6px">(' + alertaVencidos.length + ' vencido' + (alertaVencidos.length !== 1 ? 's' : '') + ')</span></div></div>' +
         '<div class="metric-card animate-in stagger-5" style="border-left:4px solid var(--accent)"><div class="metric-label">Tempo medio de acerto</div><div class="metric-value">' + (tempoMedio > 0 ? tempoMedio + ' <span style="font-size:16px;color:var(--fg-muted)">dias</span>' : '—') + '</div></div>' +
       '</div>' +
 
-      // MELHORIA 5: painel sem movimentação
-      (semMovimento.length ? '<div class="card animate-in" style="margin-bottom:20px;border:2px solid var(--warning)"><div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><h3 style="font-size:12px;font-weight:700;color:var(--warning);text-transform:uppercase">Sem movimentacao ha 4+ dias (' + semMovimento.length + ')</h3></div><div style="display:flex;flex-wrap:wrap;gap:0">' +
-        semMovimento.map(function(p) {
-          const d = diasSemMovimento(p);
-          return '<div class="colab-row" style="flex:1;min-width:280px"><span class="badge badge-primary">' + p.contrato + '</span><div style="flex:1;margin-left:10px"><div style="font-weight:600;font-size:13px">' + p.end + '</div><div style="font-size:11px;color:var(--fg-muted)">' + p.colabDist + ' · ' + (p.modal||'-') + '</div></div><div class="prazo-alert prazo-alerta">' + d + 'd parado</div></div>';
-        }).join('') + '</div></div>' : '') +
-
-      // MELHORIA 4: Contratos por colaboradora — clicável para filtrar
+      // Contratos por Colaboradora + Alerta de Prazo
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">' +
         '<div class="card animate-in"><div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between"><h3 style="font-size:13px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase">Contratos por Colaboradora</h3>' +
         (d2Filtro ? '<button class="btn btn-secondary btn-sm" onclick="d2Filtro=\'\';rD2(document.getElementById(\'CNT\'),document.getElementById(\'SB\'))">Ver todas</button>' : '<span style="font-size:11px;color:var(--fg-subtle)">Clique para filtrar</span>') +
@@ -977,7 +1047,14 @@
         '</div>' +
       '</div>' +
 
-      // MELHORIA 4: painel de contratos da colaboradora filtrada
+      // Painel sem movimentação — ABAIXO dos dois painéis acima
+      (semMovimento.length ? '<div class="card animate-in" style="margin-bottom:20px;border:2px solid var(--warning)"><div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><h3 style="font-size:12px;font-weight:700;color:var(--warning);text-transform:uppercase">Sem movimentacao ha 4+ dias (' + semMovimento.length + ')</h3></div><div style="display:flex;flex-wrap:wrap;gap:0">' +
+        semMovimento.map(function(p) {
+          const d = diasSemMovimento(p);
+          return '<div class="colab-row" style="flex:1;min-width:280px"><span class="badge badge-primary">' + p.contrato + '</span><div style="flex:1;margin-left:10px"><div style="font-weight:600;font-size:13px">' + p.end + '</div><div style="font-size:11px;color:var(--fg-muted)">' + p.colabDist + ' · ' + (p.modal||'-') + '</div></div><div class="prazo-alert prazo-alerta">' + d + 'd parado</div></div>';
+        }).join('') + '</div></div>' : '') +
+
+      // Painel de contratos da colaboradora filtrada
       (d2Filtro && filtrados.length ? '<div class="card animate-in"><div style="padding:16px 20px;border-bottom:1px solid var(--border);background:var(--accent-light)"><h3 style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase">Contratos de ' + d2Filtro + ' (' + filtrados.length + ')</h3></div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereco</th><th>Modalidade</th><th>Encerramento</th><th>Prazo</th><th>Status</th><th>Movimentacao</th></tr></thead><tbody>' +
         filtrados.map(function(p) {
           const prazoDias = (p.modal === 'CredAluga' || p.modal === 'Loft' || p.modal === 'Seguro Fianca') ? 30 : 45;
@@ -2557,6 +2634,129 @@
       dbSaveProt(p);
       showToast('Observação salva!', 'success');
     }
+    // ── NÚMEROS DE DESOCUPAÇÃO ────────────────────────────────────────────────
+    var desocDados = {};
+    var desocMesAtual = '';
+
+    async function loadDesoc() {
+      try {
+        const rows = await sbGet('config', 'chave=like.desoc_%');
+        rows.forEach(function(r) {
+          try { desocDados[r.chave.replace('desoc_','')] = JSON.parse(r.valor); } catch(e) {}
+        });
+      } catch(e) {}
+    }
+
+    async function saveDesocMes(mes) {
+      const val = JSON.stringify(desocDados[mes] || { total: 0, motivos: {} });
+      await fetch(SB_URL + '/rest/v1/config?chave=eq.desoc_' + mes, { method: 'DELETE', headers: SB_HDR });
+      await sbUpsert('config', { chave: 'desoc_' + mes, valor: val });
+    }
+
+    async function rDesoc(c, sb) {
+      await loadDesoc();
+      const canEdit = S.user && (S.user.role === 'admin' || S.user.role === 'gestor_vistoria' || S.user.role === 'gestora_desocupacao' || S.user.role === 'gestor_operacional');
+      const now = new Date();
+      if (!desocMesAtual) desocMesAtual = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+
+      function renderDesoc() {
+        const mes = desocMesAtual;
+        const dado = desocDados[mes] || { total: 0, motivos: {} };
+        const mesNome = ML[parseInt(mes.split('-')[1])-1] + ' ' + mes.split('-')[0];
+        const totalMotivos = Object.values(dado.motivos||{}).reduce(function(a,b){ return a+b; }, 0);
+
+        c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Números de Desocupação</h1><p class="section-subtitle">Quantidades e motivos por mês</p></div></div>' +
+
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">' +
+          '<button class="btn btn-secondary btn-sm" onclick="desocNavMes(-1)">← Anterior</button>' +
+          '<h2 style="font-size:18px;font-weight:700;flex:1;text-align:center">' + mesNome + '</h2>' +
+          '<button class="btn btn-secondary btn-sm" onclick="desocNavMes(1)">Próximo →</button>' +
+        '</div>' +
+
+        '<div style="display:grid;grid-template-columns:1fr 2fr;gap:20px;margin-bottom:20px">' +
+          '<div class="card animate-in" style="padding:24px;text-align:center">' +
+            '<div style="font-size:56px;font-weight:700;color:var(--accent);font-family:\'Fraunces\',serif">' + dado.total + '</div>' +
+            '<div style="font-size:13px;color:var(--fg-muted);margin-bottom:16px">Total de desocupações em ' + mesNome + '</div>' +
+            (canEdit ? '<div style="display:flex;gap:8px;justify-content:center;align-items:center">' +
+              '<input type="number" id="desoc-total-input" class="form-input" value="' + dado.total + '" min="0" style="width:100px;text-align:center;font-size:18px">' +
+              '<button class="btn btn-primary btn-sm" onclick="salvarDesocTotal()">Salvar</button>' +
+            '</div>' : '') +
+          '</div>' +
+
+          '<div class="card animate-in" style="padding:20px">' +
+            '<h3 style="font-size:13px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:16px">Motivos (' + totalMotivos + ')</h3>' +
+            '<div style="display:flex;flex-direction:column;gap:10px">' +
+            MOTIVOS_DESOC.map(function(motivo) {
+              const qtd = (dado.motivos||{})[motivo] || 0;
+              const pct = totalMotivos > 0 ? Math.round((qtd/totalMotivos)*100) : 0;
+              return '<div style="display:flex;align-items:center;gap:10px">' +
+                '<span style="font-size:12px;flex:1;color:var(--fg)">' + motivo + '</span>' +
+                (canEdit ?
+                  '<div style="display:flex;align-items:center;gap:4px">' +
+                    '<button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:14px" onclick="ajustarMotivo(\'' + motivo.replace(/\'/g,"\\'") + '\',-1)">−</button>' +
+                    '<span style="min-width:28px;text-align:center;font-weight:700;font-size:14px">' + qtd + '</span>' +
+                    '<button class="btn btn-primary btn-sm" style="padding:2px 8px;font-size:14px" onclick="ajustarMotivo(\'' + motivo.replace(/\'/g,"\\'") + '\',1)">+</button>' +
+                  '</div>' :
+                  '<span style="font-weight:700;font-size:14px;min-width:28px;text-align:right">' + qtd + '</span>'
+                ) +
+                '<div style="width:80px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">' +
+                  '<div style="height:100%;width:' + pct + '%;background:var(--accent);border-radius:3px"></div>' +
+                '</div>' +
+                '<span style="font-size:11px;color:var(--fg-subtle);min-width:32px">' + pct + '%</span>' +
+              '</div>';
+            }).join('') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="card animate-in"><div style="padding:16px 20px;border-bottom:1px solid var(--border)"><h3 style="font-size:13px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase">Histórico Mensal</h3></div>' +
+        (Object.keys(desocDados).length ?
+        '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Mês</th><th>Total</th><th>Principal motivo</th></tr></thead><tbody>' +
+        Object.keys(desocDados).sort(function(a,b){ return b.localeCompare(a); }).map(function(m) {
+          const d = desocDados[m];
+          const mNome = ML[parseInt(m.split('-')[1])-1] + ' ' + m.split('-')[0];
+          const motivos = d.motivos || {};
+          const principal = Object.keys(motivos).filter(function(k){ return motivos[k]>0; }).sort(function(a,b){ return motivos[b]-motivos[a]; })[0] || '—';
+          return '<tr style="cursor:pointer" onclick="desocMesAtual=\'' + m + '\';rDesoc(document.getElementById(\'CNT\'),document.getElementById(\'SB\'))">' +
+            '<td><strong>' + mNome + '</strong>' + (m === mes ? ' <span class="badge badge-primary">atual</span>' : '') + '</td>' +
+            '<td><span style="font-size:18px;font-weight:700;color:var(--accent)">' + d.total + '</span></td>' +
+            '<td style="font-size:13px;color:var(--fg-muted)">' + principal + '</td>' +
+          '</tr>';
+        }).join('') + '</tbody></table></div>'
+        : '<p style="padding:20px;color:var(--fg-subtle);text-align:center">Nenhum dado registrado ainda.</p>') +
+        '</div>';
+
+        showSidebar(false);
+      }
+
+      window.desocNavMes = function(dir) {
+        const parts = desocMesAtual.split('-');
+        const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1+dir, 1);
+        desocMesAtual = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+        rDesoc(c, sb);
+      };
+
+      window.salvarDesocTotal = async function() {
+        const val = parseInt(document.getElementById('desoc-total-input').value) || 0;
+        if (!desocDados[desocMesAtual]) desocDados[desocMesAtual] = { total: 0, motivos: {} };
+        desocDados[desocMesAtual].total = val;
+        await saveDesocMes(desocMesAtual);
+        showToast('Total salvo!', 'success');
+        renderDesoc();
+      };
+
+      window.ajustarMotivo = async function(motivo, delta) {
+        if (!desocDados[desocMesAtual]) desocDados[desocMesAtual] = { total: 0, motivos: {} };
+        if (!desocDados[desocMesAtual].motivos) desocDados[desocMesAtual].motivos = {};
+        const atual = desocDados[desocMesAtual].motivos[motivo] || 0;
+        desocDados[desocMesAtual].motivos[motivo] = Math.max(0, atual + delta);
+        await saveDesocMes(desocMesAtual);
+        renderDesoc();
+      };
+
+      renderDesoc();
+    }
+
     function rTarefas(c, sb) {
       const n = S.user.nome;
       // Tarefas salvas no localStorage — privadas, só do navegador da colaboradora
@@ -2752,7 +2952,7 @@
           '<div class="form-group" style="margin-bottom:0"><label class="form-label">Nome</label><input type="text" class="form-input" id="adm-nome" placeholder="Nome completo"></div>' +
           '<div class="form-group" style="margin-bottom:0"><label class="form-label">Login</label><input type="text" class="form-input" id="adm-login" placeholder="usuario"></div>' +
           '<div class="form-group" style="margin-bottom:0"><label class="form-label">Senha</label><input type="text" class="form-input" id="adm-senha" placeholder="******"></div>' +
-          '<div class="form-group" style="margin-bottom:0"><label class="form-label">Funcao</label><select class="form-input form-select" id="adm-role"><option value="colaboradora">Colaboradora</option><option value="vistoriador">Vistoriador</option><option value="gestor_vistoria">Gestor Vistoria</option><option value="gestora_desocupacao">Gestora Desocupacao</option><option value="seguro_fianca">Seguro Fianca</option></select></div>' +
+          '<div class="form-group" style="margin-bottom:0"><label class="form-label">Funcao</label><select class="form-input form-select" id="adm-role"><option value="colaboradora">Colaboradora</option><option value="vistoriador">Vistoriador</option><option value="gestor_vistoria">Gestor Vistoria</option><option value="gestora_desocupacao">Gestora Desocupacao</option><option value="gestor_operacional">Gestor Operacional</option><option value="seguro_fianca">Seguro Fianca</option></select></div>' +
           '<div style="display:flex;gap:8px">' +
             '<button class="btn btn-primary" id="adm-btn" onclick="saveUser()">Adicionar</button>' +
             '<button class="btn btn-secondary" id="adm-cancel-btn" style="display:none" onclick="clearAdmForm()">Cancelar</button>' +
@@ -2772,6 +2972,7 @@
         if (u.role === 'admin') roleDisplay = 'Administrador';
         else if (u.role === 'gestor_vistoria') roleDisplay = 'Gestor Vistoria';
         else if (u.role === 'gestora_desocupacao') roleDisplay = 'Gestora Desocupacao';
+        else if (u.role === 'gestor_operacional') roleDisplay = 'Gestor Operacional';
         else if (u.role === 'colaboradora') roleDisplay = 'Colaboradora';
         else if (u.role === 'vistoriador') roleDisplay = 'Vistoriador';
         return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">' +
