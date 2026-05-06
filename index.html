@@ -705,14 +705,24 @@
       if (!dataCad) return 0;
       const inicio = new Date(dataCad + 'T' + (horaCad || '08:00') + ':00');
       const agora = new Date();
+      if (agora <= inicio) return 0;
+
       let horas = 0;
       let cursor = new Date(inicio);
+
       while (cursor < agora) {
-        const diaSemana = cursor.getDay(); // 0=dom, 6=sab
+        const diaSemana = cursor.getDay();
         if (diaSemana !== 0 && diaSemana !== 6) {
-          horas++;
+          // Dia útil — conta até o fim do dia ou até agora
+          const fimDia = new Date(cursor);
+          fimDia.setHours(23, 59, 59, 999);
+          const ate = fimDia < agora ? fimDia : agora;
+          horas += Math.floor((ate - cursor) / 3600000);
         }
-        cursor = new Date(cursor.getTime() + 3600000); // +1 hora
+        // Avança para o início do próximo dia
+        cursor = new Date(cursor);
+        cursor.setDate(cursor.getDate() + 1);
+        cursor.setHours(0, 0, 0, 0);
       }
       return horas;
     }
@@ -724,10 +734,11 @@
       const ret = S.ags.filter(function(a) { return a.status === 'Aguardando retorno'; }).length;
       const reparos = S.prots.filter(function(p) { return p.statusVist === 'Reparos pendentes'; }).length;
 
-      // Pastas paradas há mais de 48 horas úteis
+      // Pastas paradas há mais de 48 horas úteis — usa data_cad mais antiga por contrato
       const paradas48 = S.ags.filter(function(a) {
         if (a.status !== 'Aguardando' && a.status !== 'Atribuido') return false;
-        return horasUteisPassadas(a.dataCad || a.data, a.horaCad) > 48;
+        const horas = horasUteisPassadas(a.dataCad || a.data, a.horaCad);
+        return horas > 48;
       }).sort(function(a, b) {
         return horasUteisPassadas(b.dataCad || b.data, b.horaCad) - horasUteisPassadas(a.dataCad || a.data, a.horaCad);
       });
