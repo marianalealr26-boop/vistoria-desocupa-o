@@ -701,23 +701,33 @@
     }
     function sBar(a) { const ss = [['1', 'Agendamento'], ['2', 'Vistoriador'], ['3', 'Protocolo'], ['4', 'Orcamentos'], ['5', 'Distribuicao'], ['6', 'Finalizado']]; return '<div class="step-indicator">' + ss.map(function(s, i) { return '<div class="step-item ' + (i < a ? 'completed' : i === a ? 'active' : '') + '"><div class="step-number">' + (i < a ? '✓' : s[0]) + '</div><span>' + s[1] + '</span></div>' + (i < 5 ? '<span class="step-arrow">→</span>' : ''); }).join('') + '</div>'; }
     
-    function horasUteisPassadas(dataCad, horaCad) {
-      if (!dataCad) return 0;
-      // Aceita DD/MM/YYYY ou YYYY-MM-DD
-      let dataISO = String(dataCad).trim();
-      if (/^\d{2}\/\d{2}\/\d{4}$/.test(dataISO)) {
-        const p = dataISO.split('/');
-        dataISO = p[2] + '-' + p[1] + '-' + p[0];
-      }
-      // Aceita HH:MM ou HH:MM:SS
-      let hora = '08:00';
-      if (horaCad) {
-        const h = String(horaCad).trim();
-        hora = h.length >= 5 ? h.substring(0, 5) : h;
-      }
-      const inicio = new Date(dataISO + 'T' + hora + ':00');
+    function horasUteisPassadas(dataCad, horaCad, id) {
       const agora = new Date();
-      if (isNaN(inicio.getTime()) || agora <= inicio) return 0;
+      let inicio;
+
+      if (dataCad) {
+        // Aceita DD/MM/YYYY ou YYYY-MM-DD
+        let dataISO = String(dataCad).trim();
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(dataISO)) {
+          const p = dataISO.split('/');
+          dataISO = p[2] + '-' + p[1] + '-' + p[0];
+        }
+        let hora = '08:00';
+        if (horaCad) {
+          const h = String(horaCad).trim();
+          hora = h.length >= 5 ? h.substring(0, 5) : h;
+        }
+        inicio = new Date(dataISO + 'T' + hora + ':00');
+      }
+
+      // Fallback: usa o id como timestamp se disponível
+      if (!inicio || isNaN(inicio.getTime())) {
+        if (id && String(id).length >= 13) {
+          inicio = new Date(parseInt(String(id).substring(0, 13)));
+        }
+      }
+
+      if (!inicio || isNaN(inicio.getTime()) || agora <= inicio) return 0;
 
       let horas = 0;
       let cursor = new Date(inicio);
@@ -748,12 +758,11 @@
         if (a.status !== 'Aguardando' && a.status !== 'Atribuido') return false;
         const datRef = a.dataCad || a.data;
         const horaRef = a.horaCad || '08:00';
-        if (!datRef) return false;
-        const horas = horasUteisPassadas(datRef, horaRef);
+        const horas = horasUteisPassadas(datRef, horaRef, a.id);
         return horas > 48;
       }).sort(function(a, b) {
-        const hA = horasUteisPassadas(a.dataCad || a.data, a.horaCad || '08:00');
-        const hB = horasUteisPassadas(b.dataCad || b.data, b.horaCad || '08:00');
+        const hA = horasUteisPassadas(a.dataCad || a.data, a.horaCad || '08:00', a.id);
+        const hB = horasUteisPassadas(b.dataCad || b.data, b.horaCad || '08:00', b.id);
         return hB - hA;
       });
       
@@ -882,7 +891,7 @@
         '</div>' +
         '<div style="max-height:250px;overflow-y:auto">' +
         paradas48.map(function(a) {
-          const horas = horasUteisPassadas(a.dataCad || a.data, a.horaCad);
+          const horas = horasUteisPassadas(a.dataCad || a.data, a.horaCad, a.id);
           const dias = Math.floor(horas / 8);
           const tempoTxt = dias > 0 ? dias + 'd ' + (horas % 8) + 'h úteis' : horas + 'h úteis';
           return '<div class="colab-row" style="background:rgba(217,119,6,0.05)">' +
