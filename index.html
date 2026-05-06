@@ -703,9 +703,16 @@
     
     function horasUteisPassadas(dataCad, horaCad) {
       if (!dataCad) return 0;
-      const inicio = new Date(dataCad + 'T' + (horaCad || '08:00') + ':00');
+      // Aceita DD/MM/YYYY ou YYYY-MM-DD
+      let dataISO = String(dataCad).trim();
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(dataISO)) {
+        const p = dataISO.split('/');
+        dataISO = p[2] + '-' + p[1] + '-' + p[0];
+      }
+      const hora = String(horaCad || '08:00').trim().substring(0, 5);
+      const inicio = new Date(dataISO + 'T' + hora + ':00');
       const agora = new Date();
-      if (agora <= inicio) return 0;
+      if (isNaN(inicio.getTime()) || agora <= inicio) return 0;
 
       let horas = 0;
       let cursor = new Date(inicio);
@@ -713,13 +720,11 @@
       while (cursor < agora) {
         const diaSemana = cursor.getDay();
         if (diaSemana !== 0 && diaSemana !== 6) {
-          // Dia útil — conta até o fim do dia ou até agora
           const fimDia = new Date(cursor);
           fimDia.setHours(23, 59, 59, 999);
           const ate = fimDia < agora ? fimDia : agora;
           horas += Math.floor((ate - cursor) / 3600000);
         }
-        // Avança para o início do próximo dia
         cursor = new Date(cursor);
         cursor.setDate(cursor.getDate() + 1);
         cursor.setHours(0, 0, 0, 0);
