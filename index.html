@@ -892,8 +892,9 @@
         '<div style="max-height:250px;overflow-y:auto">' +
         paradas48.map(function(a) {
           const horas = horasUteisPassadas(a.dataCad || a.data, a.horaCad, a.id);
-          const dias = Math.floor(horas / 8);
-          const tempoTxt = dias > 0 ? dias + 'd ' + (horas % 8) + 'h úteis' : horas + 'h úteis';
+          const dias = Math.floor(horas / 24);
+          const horasRest = horas % 24;
+          const tempoTxt = dias > 0 ? dias + 'd ' + horasRest + 'h úteis' : horas + 'h úteis';
           return '<div class="colab-row" style="background:rgba(217,119,6,0.05)">' +
             '<span class="badge badge-primary">' + a.contrato + '</span>' +
             '<div style="flex:1;margin-left:10px"><div style="font-weight:600;font-size:13px">' + a.end + '</div>' +
@@ -1006,10 +1007,11 @@
       }).sort(function(a, b) { return diasSemMovimento(b) - diasSemMovimento(a); });
 
       const colabStats = colabs().map(function(u) {
-        const total = dist.filter(function(p) { return p.colabDist === u.nome; }).length;
-        const enc = dist.filter(function(p) { return p.colabDist === u.nome && p.statusAcerto === 'Encerrar aluguel'; }).length;
-        const pend = dist.filter(function(p) { return p.colabDist === u.nome && p.statusAcerto === 'Pendente'; }).length;
-        const and = dist.filter(function(p) { return p.colabDist === u.nome && p.statusAcerto === 'Em andamento'; }).length;
+        const ativos = dist.filter(function(p) { return p.colabDist === u.nome && p.statusAcerto !== 'Finalizado'; });
+        const enc = ativos.filter(function(p) { return p.statusAcerto === 'Encerrar aluguel'; }).length;
+        const pend = ativos.filter(function(p) { return p.statusAcerto === 'Pendente'; }).length;
+        const and = ativos.filter(function(p) { return p.statusAcerto === 'Em andamento'; }).length;
+        const fin = dist.filter(function(p) { return p.colabDist === u.nome && p.statusAcerto === 'Finalizado'; }).length;
         const semMov = semMovimento.filter(function(p) { return p.colabDist === u.nome; }).length;
         const comTempoColab = S.fins.filter(function(f) { return f.finalizadoPor === u.nome && f.dataPendente && f.data; });
         let tempoMedColab = '—';
@@ -1017,8 +1019,9 @@
           const totalDias = comTempoColab.reduce(function(acc, f) { const d = Math.ceil((new Date(f.data+'T12:00:00') - new Date(f.dataPendente+'T12:00:00')) / 86400000); return acc + (isNaN(d) ? 0 : d); }, 0);
           tempoMedColab = Math.round(totalDias / comTempoColab.length) + 'd';
         }
-        return { nome: u.nome, cor: u.cor, ini: u.ini, total: total, encerrar: enc, pendente: pend, emAndamento: and, semMov: semMov, tempoMed: tempoMedColab };
-      }).filter(function(u) { return u.total > 0; });
+        const total = enc + pend + and; // só ativos
+        return { nome: u.nome, cor: u.cor, ini: u.ini, total: total, encerrar: enc, pendente: pend, emAndamento: and, finalizados: fin, semMov: semMov, tempoMed: tempoMedColab };
+      }).filter(function(u) { return u.total > 0 || u.finalizados > 0; });
 
       // MELHORIA 4: contratos filtrados por colaboradora selecionada
       const filtrados = d2Filtro ? dist.filter(function(p) { return p.colabDist === d2Filtro && p.statusAcerto !== 'Finalizado'; }) : [];
@@ -1050,11 +1053,12 @@
           const ativo = d2Filtro === u.nome;
           return '<div class="colab-row" style="cursor:pointer;' + (ativo ? 'background:var(--accent-light);' : '') + '" onclick="d2Filtro=\'' + u.nome + '\';rD2(document.getElementById(\'CNT\'),document.getElementById(\'SB\'))">' +
             '<div class="avatar ' + AVATAR_COLORS[u.cor % AVATAR_COLORS.length] + '">' + u.ini + '</div>' +
-            '<div style="flex:1;margin-left:12px"><div style="font-weight:600">' + u.nome + '</div><div style="font-size:11px;color:var(--fg-muted)">Total: ' + u.total + ' contrato' + (u.total !== 1 ? 's' : '') + (u.semMov > 0 ? ' · <span style="color:var(--warning);font-weight:600">' + u.semMov + ' parado' + (u.semMov !== 1 ? 's' : '') + '</span>' : '') + '</div></div>' +
+            '<div style="flex:1;margin-left:12px"><div style="font-weight:600">' + u.nome + '</div><div style="font-size:11px;color:var(--fg-muted)">Ativos: ' + u.total + ' contrato' + (u.total !== 1 ? 's' : '') + (u.semMov > 0 ? ' · <span style="color:var(--warning);font-weight:600">' + u.semMov + ' parado' + (u.semMov !== 1 ? 's' : '') + '</span>' : '') + '</div></div>' +
             '<div style="display:flex;gap:6px">' +
               '<span class="badge badge-primary" title="Encerrar aluguel">' + u.encerrar + '</span>' +
               '<span class="badge badge-warning" title="Pendente">' + u.pendente + '</span>' +
               '<span class="badge badge-success" title="Em andamento">' + u.emAndamento + '</span>' +
+              '<span class="badge" style="background:rgba(139,92,246,0.15);color:#7C3AED" title="Finalizados">✓ ' + u.finalizados + '</span>' +
               (u.tempoMed !== '—' ? '<span class="badge badge-neutral" title="Tempo médio acerto">⏱ ' + u.tempoMed + '</span>' : '') +
             '</div>' +
             (ativo ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" style="margin-left:8px"><polyline points="20 6 9 17 4 12"/></svg>' : '') +
@@ -1174,7 +1178,20 @@
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="form-group"><label class="form-label">Nome do inquilino <span style="color:var(--danger)">*</span></label><input type="text" class="form-input" id="ag-nome" placeholder="Nome completo"></div><div class="form-group"><label class="form-label">Telefone <span style="color:var(--danger)">*</span></label><input type="tel" class="form-input" id="ag-tel" placeholder="(00) 00000-0000" oninput="fmtTel(this)"></div></div>' +
       '<div class="form-group"><label class="form-label">Modalidade da fiança</label><select class="form-input form-select" id="ag-modal"><option value="">Nenhuma / Outro</option>' + MODAIS.map(function(m) { return '<option value="' + m + '">' + m + '</option>'; }).join('') + '</select></div>' +
       '<div class="form-group"><label class="form-label">Tipo</label><select class="form-input form-select" id="ag-t" onchange="agTp()"><option value="">Selecionar</option><option value="acompanhada">Acompanhada</option><option value="nao_acompanhada">Nao acompanhada</option></select></div><div id="ag-acr" style="display:none"><div class="form-group"><label class="form-label">Acompanhada com</label><select class="form-input form-select" id="ag-ac" onchange="agAcChg()"><option>Inquilino</option><option>Proprietario</option><option>Ambos</option></select></div></div><div id="ag-48" style="display:none;padding:14px 16px;background:var(--accent-light);border-radius:10px;font-size:13px;color:var(--accent);margin-bottom:16px">Prazo: 48 horas uteis.</div><div class="form-group"><label class="form-label">Observacoes</label><textarea class="form-input form-textarea" id="ag-ob" style="min-height:80px"></textarea></div><button class="btn btn-primary btn-lg" onclick="addAg()" style="width:100%">Registrar</button></div><div id="ag-cal-wrap" style="display:none;margin-top:20px"><div class="card animate-in" style="padding:20px"><h3 style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:16px">Selecionar dia e horario</h3><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><button class="btn btn-secondary btn-sm" onclick="scMov(-1)"><</button><span style="font-size:14px;font-weight:700" id="sc-mes"></span><button class="btn btn-secondary btn-sm" onclick="scMov(1)">></button></div><div class="calendar-grid" style="margin-bottom:16px">' + DC.map(function(d) { return '<div class="calendar-day-name">' + d + '</div>'; }).join('') + '</div><div class="calendar-grid" id="sc-grid"></div><div style="margin-top:16px"><div id="sl-lbl" style="font-size:13px;font-weight:600;margin-bottom:10px">Selecione um dia</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="sl-slts"></div></div><div id="rsel" style="display:none;margin-top:12px;padding:14px 16px;background:var(--accent-light);border-radius:10px;font-size:14px;color:var(--accent);font-weight:600"></div></div></div></div><div><div class="card animate-in stagger-2" style="padding:24px"><h3 style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:16px">Registrados</h3><div id="ag-list" style="max-height:700px;overflow-y:auto"></div></div></div></div>'; rlAg(); rSCal(); const sf = document.getElementById('ag-col'); if (sf && S.user && S.user.role === 'colaboradora') { for (let i = 0; i < sf.options.length; i++) { if (sf.options[i].text === S.user.nome) { sf.value = S.user.nome; break; } } } showSidebar(false); }
-    function selRet(id) { const a = S.ags.find(function(x) { return x.id == id; }); if (!a) return; S.AGRET = a; document.getElementById('ag-title').textContent = 'Reagendamento — #' + a.contrato; document.getElementById('ag-c').value = a.contrato; document.getElementById('ag-e').value = a.end; const partes = (a.contato || '').split('|'); document.getElementById('ag-nome').value = partes[0] ? partes[0].trim() : ''; document.getElementById('ag-tel').value = partes[1] ? partes[1].trim() : ''; document.getElementById('ag-ob').value = 'Retorno apos reparos'; showToast('Selecione novo dia e horario', 'warning'); }
+    function selRet(id) { 
+      const a = S.ags.find(function(x) { return x.id == id; }); 
+      if (!a) return; 
+      S.AGRET = a; 
+      document.getElementById('ag-title').textContent = 'Reagendamento — #' + a.contrato; 
+      document.getElementById('ag-c').value = a.contrato; 
+      document.getElementById('ag-e').value = a.end; 
+      const nomeEl = document.getElementById('ag-nome'); if (nomeEl) nomeEl.value = a.nomeInq || '';
+      const telEl = document.getElementById('ag-tel'); if (telEl) telEl.value = a.telefone || '';
+      const colEl = document.getElementById('ag-col'); if (colEl && a.colab) colEl.value = a.colab;
+      const modEl = document.getElementById('ag-modal'); if (modEl && a.modal) modEl.value = a.modal;
+      document.getElementById('ag-ob').value = a.obs || 'Retorno apos reparos'; 
+      showToast('Selecione novo dia e horario', 'warning'); 
+    }
 
     // Formata telefone enquanto digita
     function fmtTel(el) { let v = el.value.replace(/\D/g,''); if (v.length > 11) v = v.slice(0,11); if (v.length > 6) v = '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7); else if (v.length > 2) v = '(' + v.slice(0,2) + ') ' + v.slice(2); else if (v.length > 0) v = '(' + v; el.value = v; }
@@ -1213,7 +1230,9 @@
       if (!telInq) { showToast('Informe o telefone', 'danger'); return; }
       if (!colab) { showToast('Selecione a colaboradora', 'danger'); return; }
       if (!modal) { showToast('Selecione a modalidade da fiança', 'danger'); return; }
-      if (!tp) { showToast('Selecione o tipo', 'danger'); return; } 
+      if (!tp) { showToast('Selecione o tipo', 'danger'); return; }
+      const obs = (document.getElementById('ag-ob')||{value:''}).value.trim();
+      if (!obs) { showToast('Informe as observações', 'danger'); return; } 
       const isAcompanhada = tp === 'acompanhada';
       const acompValue = isAcompanhada ? document.getElementById('ag-ac').value : '';
       const needsSchedule = isAcompanhada && acompValue !== 'Proprietario';
@@ -1262,7 +1281,7 @@
       rSCal(); 
       updateNavBadges();
     }
-    function rlAg() { const d = document.getElementById('ag-list'); if (!d) return; if (!S.ags.length) { d.innerHTML = '<p style="color:var(--fg-subtle);padding:12px 0">Nenhum agendamento.</p>'; return; } d.innerHTML = S.ags.slice(-20).reverse().map(function(a) { const fC = fex(a.dataCad || a.data), fV = a.data && a.horaSel ? fex(a.data) : null; const isProp = a.tipo === 'acompanhada' && a.acomp === 'Proprietario'; const nomeInq = a.nomeInq || (a.contato ? a.contato.split('|')[0].trim() : '-'); const telInq = a.telefone || (a.contato && a.contato.includes('|') ? a.contato.split('|')[1].trim() : ''); const modalBadge = a.modal ? '<span class="badge badge-warning" style="margin-left:6px">' + a.modal + '</span>' : ''; return '<div style="padding:16px 0;border-bottom:1px solid var(--border)"><div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span class="badge badge-primary">' + a.contrato + '</span>' + modalBadge + '<span style="font-size:14px;font-weight:600;flex:1">' + a.end + '</span></div><div style="font-size:12px;color:var(--fg-subtle);margin-bottom:4px">Cadastro: ' + fC.full + ' as ' + a.horaCad + '</div><div style="font-size:12px;margin-bottom:6px"><span style="font-weight:600">' + nomeInq + '</span>' + (telInq ? ' · <a href="tel:' + telInq.replace(/\D/g,'') + '" style="color:var(--accent)">' + telInq + '</a>' : '') + '</div>' + (fV && !isProp ? '<div><span class="badge badge-primary">' + fV.ds + ', ' + fV.dia + ' de ' + fV.mes + ' - ' + a.horaSel + '</span></div>' : '<span class="badge badge-warning">48h uteis</span>') + '<div style="margin-top:8px"><span class="badge ' + (a.status === 'Concluido' ? 'badge-success' : a.status === 'Atribuido' ? 'badge-primary' : 'badge-warning') + '">' + a.status + '</span></div></div>'; }).join(''); }
+    function rlAg() { const d = document.getElementById('ag-list'); if (!d) return; if (!S.ags.length) { d.innerHTML = '<p style="color:var(--fg-subtle);padding:12px 0">Nenhum agendamento.</p>'; return; } d.innerHTML = S.ags.slice(-20).reverse().map(function(a) { const fC = fex(a.dataCad || a.data), fV = a.data && a.horaSel ? fex(a.data) : null; const isProp = a.tipo === 'acompanhada' && a.acomp === 'Proprietario'; const nomeInq = a.nomeInq || (a.contato ? a.contato.split('|')[0].trim() : '-'); const telInq = a.telefone || (a.contato && a.contato.includes('|') ? a.contato.split('|')[1].trim() : ''); const modalBadge = a.modal ? '<span class="badge badge-warning" style="margin-left:6px">' + a.modal + '</span>' : ''; return '<div style="padding:16px 0;border-bottom:1px solid var(--border)"><div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span class="badge badge-primary">' + a.contrato + '</span>' + modalBadge + '<span style="font-size:14px;font-weight:600;flex:1">' + a.end + '</span></div><div style="font-size:12px;color:var(--fg-subtle);margin-bottom:4px">Cadastro: ' + fC.full + ' as ' + a.horaCad + (a.colab ? ' · <strong>' + a.colab + '</strong>' : '') + '</div><div style="font-size:12px;margin-bottom:6px"><span style="font-weight:600">' + nomeInq + '</span>' + (telInq ? ' · <a href="tel:' + telInq.replace(/\D/g,'') + '" style="color:var(--accent)">' + telInq + '</a>' : '') + '</div>' + (fV && !isProp ? '<div><span class="badge badge-primary">' + fV.ds + ', ' + fV.dia + ' de ' + fV.mes + ' - ' + a.horaSel + '</span></div>' : '<span class="badge badge-warning">48h uteis</span>') + '<div style="margin-top:8px"><span class="badge ' + (a.status === 'Concluido' ? 'badge-success' : a.status === 'Atribuido' ? 'badge-primary' : 'badge-warning') + '">' + a.status + '</span></div>' + '<div style="margin-top:8px"><textarea class="form-input" onchange="upAgObs(\'' + a.id + '\',this.value)" placeholder="Observação..." style="min-height:52px;font-size:12px;resize:vertical;width:100%">' + (a.obs||'') + '</textarea></div></div>'; }).join(''); }
     
     var vistFiltro = { vistoriador: '', status: '' };
 
@@ -1380,11 +1399,17 @@
         const prot = S.prots.find(function(p) { return p.agId === a.id; });
         const dataReg = prot && prot.dataRegistro ? fmtData(prot.dataRegistro) : '—';
         const regPor = prot && prot.registradoPor ? prot.registradoPor : '—';
-        return '<tr style="' + (prot ? 'opacity:0.7' : '') + '"><td><span class="badge badge-primary">' + a.contrato + '</span></td><td style="font-weight:600">' + a.end + '</td><td>' + (prot ? '<span class="badge badge-success">Registrado</span>' : '<span class="badge badge-warning">Pendente</span>') + '</td><td style="font-size:12px;color:var(--fg-muted)">' + dataReg + '</td><td style="font-size:12px;color:var(--fg-muted)">' + regPor + '</td><td>' + (prot ? '' : '<button class="btn btn-primary btn-sm" onclick="aPk(\'' + a.id + '\')">Preencher</button>') + '</td></tr>'; 
+        return '<tr style="' + (prot ? 'opacity:0.85' : '') + '"><td><span class="badge badge-primary">' + a.contrato + '</span></td><td style="font-weight:600">' + a.end + '</td><td>' + (prot ? '<span class="badge badge-success">Registrado</span>' : '<span class="badge badge-warning">Pendente</span>') + '</td><td style="font-size:12px;color:var(--fg-muted)">' + dataReg + '</td><td style="font-size:12px;color:var(--fg-muted)">' + regPor + '</td><td>' + (prot ? '' : '<button class="btn btn-primary btn-sm" onclick="aPk(\'' + a.id + '\')">Preencher</button>') + '</td></tr>'; 
       }).join('') + '</tbody></table></div>' : '<p style="padding:24px;color:var(--fg-subtle)">Nenhuma vistoria encerrada.</p>') + '</div><div id="pkf"></div>'; 
       showSidebar(false); 
     }
-    function aPk(agId) { const ag = S.ags.find(function(a) { return a.id == agId; }); if (!ag) return; S.pkEdit = agId; document.getElementById('pkf').innerHTML = '<div class="card animate-in" style="margin-top:20px;padding:24px"><h3 style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:20px">Protocolo — ' + ag.contrato + '</h3><div style="padding:12px 16px;background:var(--accent-light);border-radius:10px;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:20px">Imovel: <strong>' + ag.end + '</strong></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><div class="form-group"><label class="form-label">Data envio</label><input type="date" class="form-input" id="pk-dt"></div><div class="form-group"><label class="form-label">Modalidade</label><select class="form-input form-select" id="pk-m"><option value="">Selecionar</option>' + MODAIS.map(function(m) { return '<option ' + (ag.modal === m ? 'selected' : '') + '>' + m + '</option>'; }).join('') + '</select>' + (ag.modal ? '<div style="font-size:11px;color:var(--success);margin-top:4px">✓ Preenchida automaticamente do agendamento</div>' : '') + '</div><div class="form-group"><label class="form-label">Status vistoria</label><select class="form-input form-select" id="pk-sv" onchange="pkSvChg()"><option>Aprovada</option><option>Reparos pendentes</option><option>Nao possui vistoria</option></select></div><div class="form-group"><label class="form-label">Data encerramento aluguel</label><input type="date" class="form-input" id="pk-enc"></div><div class="form-group"><label class="form-label">Laudo assinado</label><select class="form-input form-select" id="pk-laud"><option>Sim</option><option>Nao</option></select></div></div><div id="pk-reparos-info" style="display:none;padding:14px 16px;background:var(--warning-light);border-radius:10px;font-size:13px;color:var(--warning);font-weight:500;margin-top:16px">Este contrato ira para <strong>Orcamentos</strong> e <strong>Distribuicao</strong>.</div><div id="pk-e" style="display:none;padding:12px 16px;background:var(--danger-light);color:var(--danger);border-radius:10px;font-size:13px;margin-top:16px"></div><button class="btn btn-primary btn-lg" onclick="svPk()" style="width:100%;margin-top:20px">Salvar</button></div>'; }
+    function upAgObs(id, v) {
+      const a = S.ags.find(function(x) { return x.id == id; });
+      if (!a) return;
+      a.obs = v;
+      dbSaveAg(a);
+      showToast('Observação salva!', 'success');
+    } const ag = S.ags.find(function(a) { return a.id == agId; }); if (!ag) return; S.pkEdit = agId; document.getElementById('pkf').innerHTML = '<div class="card animate-in" style="margin-top:20px;padding:24px"><h3 style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:20px">Protocolo — ' + ag.contrato + '</h3><div style="padding:12px 16px;background:var(--accent-light);border-radius:10px;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:20px">Imovel: <strong>' + ag.end + '</strong></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><div class="form-group"><label class="form-label">Data envio</label><input type="date" class="form-input" id="pk-dt"></div><div class="form-group"><label class="form-label">Modalidade</label><select class="form-input form-select" id="pk-m"><option value="">Selecionar</option>' + MODAIS.map(function(m) { return '<option ' + (ag.modal === m ? 'selected' : '') + '>' + m + '</option>'; }).join('') + '</select>' + (ag.modal ? '<div style="font-size:11px;color:var(--success);margin-top:4px">✓ Preenchida automaticamente do agendamento</div>' : '') + '</div><div class="form-group"><label class="form-label">Status vistoria</label><select class="form-input form-select" id="pk-sv" onchange="pkSvChg()"><option>Aprovada</option><option>Reparos pendentes</option><option>Nao possui vistoria</option></select></div><div class="form-group"><label class="form-label">Data encerramento aluguel</label><input type="date" class="form-input" id="pk-enc"></div><div class="form-group"><label class="form-label">Laudo assinado</label><select class="form-input form-select" id="pk-laud"><option>Sim</option><option>Nao</option></select></div></div><div id="pk-reparos-info" style="display:none;padding:14px 16px;background:var(--warning-light);border-radius:10px;font-size:13px;color:var(--warning);font-weight:500;margin-top:16px">Este contrato ira para <strong>Orcamentos</strong> e <strong>Distribuicao</strong>.</div><div id="pk-e" style="display:none;padding:12px 16px;background:var(--danger-light);color:var(--danger);border-radius:10px;font-size:13px;margin-top:16px"></div><button class="btn btn-primary btn-lg" onclick="svPk()" style="width:100%;margin-top:20px">Salvar</button></div>'; }
     // Helper: verifica se laudo é obrigatório conforme modalidade e status vistoria
     function laudoObrigatorio(modal, statusVist) {
       const modalObrig = ['CredAluga', 'Loft', 'Seguro Fianca'];
@@ -2734,11 +2759,7 @@
               return '<div style="display:flex;align-items:center;gap:10px">' +
                 '<span style="font-size:12px;flex:1;color:var(--fg)">' + motivo + '</span>' +
                 (canEdit ?
-                  '<div style="display:flex;align-items:center;gap:4px">' +
-                    '<button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:14px" onclick="ajustarMotivo(\'' + motivo.replace(/\'/g,"\\'") + '\',-1)">−</button>' +
-                    '<span style="min-width:28px;text-align:center;font-weight:700;font-size:14px">' + qtd + '</span>' +
-                    '<button class="btn btn-primary btn-sm" style="padding:2px 8px;font-size:14px" onclick="ajustarMotivo(\'' + motivo.replace(/\'/g,"\\'") + '\',1)">+</button>' +
-                  '</div>' :
+                  '<input type="number" min="0" value="' + qtd + '" style="width:60px;text-align:center;font-size:14px;font-weight:700;padding:4px 6px" class="form-input" onchange="ajustarMotivo(\'' + motivo.replace(/\'/g,"\\'") + '\',parseInt(this.value)||0)">' :
                   '<span style="font-weight:700;font-size:14px;min-width:28px;text-align:right">' + qtd + '</span>'
                 ) +
                 '<div style="width:80px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">' +
@@ -2787,11 +2808,10 @@
         renderDesoc();
       };
 
-      window.ajustarMotivo = async function(motivo, delta) {
+      window.ajustarMotivo = async function(motivo, valor) {
         if (!desocDados[desocMesAtual]) desocDados[desocMesAtual] = { total: 0, motivos: {} };
         if (!desocDados[desocMesAtual].motivos) desocDados[desocMesAtual].motivos = {};
-        const atual = desocDados[desocMesAtual].motivos[motivo] || 0;
-        desocDados[desocMesAtual].motivos[motivo] = Math.max(0, atual + delta);
+        desocDados[desocMesAtual].motivos[motivo] = Math.max(0, valor);
         await saveDesocMes(desocMesAtual);
         renderDesoc();
       };
