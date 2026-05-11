@@ -923,12 +923,17 @@
         (paraReagendar.length ? '<button class="btn btn-danger btn-sm" onclick="goTab(\'ag\')">Ir para Agendamento</button>' : '') +
         '</div>' +
         (paraReagendar.length ? '<div style="max-height:300px;overflow-y:auto">' + paraReagendar.map(function(a) {
-          return '<div class="colab-row"><span class="badge badge-primary">' + a.contrato + '</span>' +
-            '<div style="flex:1;margin-left:12px"><div style="font-weight:600;font-size:13px">' + a.end + '</div>' +
-            '<div style="font-size:11px;color:var(--fg-muted)">Vistoriador: ' + (a.vistoriador || '-') + '</div></div>' +
+          // Calcula dias desde que foi para reagendar (usando dataCad como referência)
+          const dataRef = a.dataCad || a.data;
+          const diasParado = dataRef ? Math.floor((new Date() - new Date(dataRef + 'T12:00:00')) / 86400000) : 0;
+          const atrasado = diasParado >= 8;
+          return '<div class="colab-row" style="' + (atrasado ? 'background:rgba(220,38,38,0.08);border-left:3px solid var(--danger)' : '') + '">' +
+            '<span class="badge badge-primary">' + a.contrato + '</span>' +
+            '<div style="flex:1;margin-left:12px"><div style="font-weight:600;font-size:13px;color:' + (atrasado ? 'var(--danger)' : 'inherit') + '">' + a.end + '</div>' +
+            '<div style="font-size:11px;color:var(--fg-muted)">Vistoriador: ' + (a.vistoriador || '-') + (atrasado ? ' · <span style="color:var(--danger);font-weight:600">' + diasParado + 'd parado</span>' : '') + '</div></div>' +
             '<div style="display:flex;gap:6px">' +
               '<button class="btn btn-success btn-sm" onclick="enviarProtocolo(\'' + a.id + '\')" title="Enviar direto para Protocolo sem reagendar">→ Protocolo</button>' +
-              '<span class="badge badge-danger">Reagendar</span>' +
+              '<span class="badge ' + (atrasado ? 'badge-danger' : 'badge-warning') + '">Reagendar</span>' +
             '</div>' +
           '</div>';
         }).join('') + '</div>' : '<p style="padding:20px;color:var(--fg-subtle);text-align:center">Nenhum contrato para reagendar.</p>') +
@@ -1173,7 +1178,7 @@
       if (cb) cb(v);
     }
     
-    function rAg(c, sb) { S.SEL = { dia: null, hora: null }; S.AGRET = null; if (!S.selCal) { const n = new Date(); S.selCal = { a: n.getFullYear(), m: n.getMonth() }; } const now = new Date(), hh = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'), hoje = now.toISOString().split('T')[0], fhj = fex(hoje), rets = S.ags.filter(function(a) { return a.status === 'Aguardando retorno'; }); c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Agendamento</h1></div></div>' + sBar(0) + (rets.length ? '<div style="padding:16px 20px;background:var(--warning-light);border:1px solid rgba(217,119,6,0.2);border-radius:12px;margin-bottom:20px"><strong style="color:var(--warning)">' + rets.length + ' contrato(s)</strong> aguardando retorno<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">' + rets.map(function(a) { return '<button class="btn btn-warning btn-sm" onclick="selRet(\'' + a.id + '\')">Reagendar #' + a.contrato + '</button>'; }).join('') + '</div></div>' : '') + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px"><div><div class="card animate-in stagger-1" style="padding:24px"><h3 id="ag-title" style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:20px">Novo agendamento</h3><div class="form-group"><label class="form-label">Colaboradora</label><select class="form-input form-select" id="ag-col"><option value="">Selecionar</option>' + colabs().map(function(u) { return '<option>' + u.nome + '</option>'; }).join('') + '</select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="form-group"><label class="form-label">Data cadastro</label><input type="text" class="form-input" value="' + fhj.full + '" readonly style="background:var(--bg)"></div><div class="form-group"><label class="form-label">Hora</label><input type="text" class="form-input" value="' + hh + '" readonly style="background:var(--bg)"></div></div><div class="form-group"><label class="form-label">Contrato</label><input type="text" class="form-input" id="ag-c" placeholder="Ex: 26978"></div><div class="form-group"><label class="form-label">Endereco</label><input type="text" class="form-input" id="ag-e" placeholder="Rua, numero..."></div>' +
+    function rAg(c, sb) { S.SEL = { dia: null, hora: null }; S.AGRET = null; if (!S.selCal) { const n = new Date(); S.selCal = { a: n.getFullYear(), m: n.getMonth() }; } const now = new Date(), hh = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'), hoje = now.toISOString().split('T')[0], fhj = fex(hoje), rets = S.ags.filter(function(a) { return a.status === 'Aguardando retorno'; }); c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Agendamento</h1></div></div>' + sBar(0) + (rets.length ? '<div style="padding:16px 20px;background:var(--warning-light);border:1px solid rgba(217,119,6,0.2);border-radius:12px;margin-bottom:20px"><strong style="color:var(--warning)">' + rets.length + ' contrato(s)</strong> aguardando retorno<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">' + rets.map(function(a) { return '<button class="btn btn-warning btn-sm" onclick="selRet(\'' + a.id + '\')">Reagendar #' + a.contrato + '</button>'; }).join('') + '</div></div>' : '') + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px"><div><div class="card animate-in stagger-1" style="padding:24px"><h3 id="ag-title" style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:20px">Novo agendamento</h3><div class="form-group"><label class="form-label">Colaboradora</label><select class="form-input form-select" id="ag-col"><option value="">Selecionar</option>' + colabs().map(function(u) { return '<option>' + u.nome + '</option>'; }).join('') + '</select></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="form-group"><label class="form-label">Data cadastro</label><input type="text" class="form-input" value="' + fhj.full + '" readonly style="background:var(--bg)"></div><div class="form-group"><label class="form-label">Hora</label><input type="text" class="form-input" value="' + hh + '" readonly style="background:var(--bg)"></div></div><div class="form-group"><label class="form-label">Contrato</label><input type="text" class="form-input" id="ag-c" placeholder="Ex: 26978" oninput="verificarContratoDup()"><div id="ag-c-aviso" style="display:none;margin-top:6px;padding:10px 12px;border-radius:8px;font-size:12px"></div></div><div class="form-group"><label class="form-label">Endereco</label><input type="text" class="form-input" id="ag-e" placeholder="Rua, numero..."></div>' +
       // MELHORIA 6: Nome e Telefone separados
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="form-group"><label class="form-label">Nome do inquilino <span style="color:var(--danger)">*</span></label><input type="text" class="form-input" id="ag-nome" placeholder="Nome completo"></div><div class="form-group"><label class="form-label">Telefone <span style="color:var(--danger)">*</span></label><input type="tel" class="form-input" id="ag-tel" placeholder="(00) 00000-0000" oninput="fmtTel(this)"></div></div>' +
       '<div class="form-group"><label class="form-label">Modalidade da fiança</label><select class="form-input form-select" id="ag-modal"><option value="">Nenhuma / Outro</option>' + MODAIS.map(function(m) { return '<option value="' + m + '">' + m + '</option>'; }).join('') + '</select></div>' +
@@ -1409,6 +1414,30 @@
       a.obs = v;
       dbSaveAg(a);
       showToast('Observação salva!', 'success');
+    }
+
+    function verificarContratoDup() {
+      const val = (document.getElementById('ag-c')||{value:''}).value.trim();
+      const aviso = document.getElementById('ag-c-aviso');
+      if (!aviso) return;
+      if (!val || val.length < 3) { aviso.style.display = 'none'; return; }
+
+      const naFila = S.ags.filter(function(a) {
+        return String(a.contrato) === val && (a.status === 'Aguardando' || a.status === 'Atribuido');
+      });
+      const paraReag = S.ags.filter(function(a) {
+        return String(a.contrato) === val && a.status === 'Aguardando retorno';
+      });
+
+      if (naFila.length > 0) {
+        aviso.style.cssText = 'display:block;margin-top:6px;padding:10px 12px;border-radius:8px;font-size:12px;background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);color:var(--danger)';
+        aviso.innerHTML = '⚠ Este contrato já está na <strong>fila do Vistoriador</strong> (' + naFila[0].end + '). Verifique antes de criar um novo agendamento.';
+      } else if (paraReag.length > 0) {
+        aviso.style.cssText = 'display:block;margin-top:6px;padding:10px 12px;border-radius:8px;font-size:12px;background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.3);color:var(--warning)';
+        aviso.innerHTML = '⚠ Este contrato está <strong>aguardando reagendamento</strong> (' + paraReag[0].end + '). Use o botão "Reagendar" em vez de criar novo. <button class="btn btn-warning btn-sm" style="margin-left:8px" onclick="selRet(\'' + paraReag[0].id + '\')">Reagendar agora</button>';
+      } else {
+        aviso.style.display = 'none';
+      }
     }
 
     function aPk(agId) { const ag = S.ags.find(function(a) { return a.id == agId; }); if (!ag) return; S.pkEdit = agId; document.getElementById('pkf').innerHTML = '<div class="card animate-in" style="margin-top:20px;padding:24px"><h3 style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:20px">Protocolo — ' + ag.contrato + '</h3><div style="padding:12px 16px;background:var(--accent-light);border-radius:10px;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:20px">Imovel: <strong>' + ag.end + '</strong></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><div class="form-group"><label class="form-label">Data envio</label><input type="date" class="form-input" id="pk-dt"></div><div class="form-group"><label class="form-label">Modalidade</label><select class="form-input form-select" id="pk-m"><option value="">Selecionar</option>' + MODAIS.map(function(m) { return '<option ' + (ag.modal === m ? 'selected' : '') + '>' + m + '</option>'; }).join('') + '</select>' + (ag.modal ? '<div style="font-size:11px;color:var(--success);margin-top:4px">✓ Preenchida automaticamente do agendamento</div>' : '') + '</div><div class="form-group"><label class="form-label">Status vistoria</label><select class="form-input form-select" id="pk-sv" onchange="pkSvChg()"><option>Aprovada</option><option>Reparos pendentes</option><option>Nao possui vistoria</option></select></div><div class="form-group"><label class="form-label">Data encerramento aluguel</label><input type="date" class="form-input" id="pk-enc"></div><div class="form-group"><label class="form-label">Laudo assinado</label><select class="form-input form-select" id="pk-laud"><option>Sim</option><option>Nao</option></select></div></div><div id="pk-reparos-info" style="display:none;padding:14px 16px;background:var(--warning-light);border-radius:10px;font-size:13px;color:var(--warning);font-weight:500;margin-top:16px">Este contrato ira para <strong>Orcamentos</strong> e <strong>Distribuicao</strong>.</div><div id="pk-e" style="display:none;padding:12px 16px;background:var(--danger-light);color:var(--danger);border-radius:10px;font-size:13px;margin-top:16px"></div><button class="btn btn-primary btn-lg" onclick="svPk()" style="width:100%;margin-top:20px">Salvar</button></div>'; }
@@ -1921,7 +1950,7 @@
       if (!p || !novaColab) return;
       const anterior = p.colabDist;
       p.colabDist = novaColab;
-      p.dataDist = new Date().toISOString().split('T')[0];
+      // Não atualiza data_dist — mantém a data original da distribuição
       p.colabDist = novaColab;
       addLog(p.contrato, 'Colaboradora alterada: ' + anterior + ' → ' + novaColab, 'Por: ' + (S.user ? S.user.nome : '—'));
       dbSaveProt(p);
