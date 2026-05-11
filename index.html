@@ -1878,19 +1878,24 @@
       const ativos = getRodizioAtivos();
       if (!ativos.length) { showToast('Nenhuma colaboradora ativa no rodizio. Ative pelo menos uma.', 'danger'); return; }
 
+      // DATA DE CORTE — só contratos distribuídos a partir desta data contam no balanço
+      const dataCorteSt = '2026-05-11';
+
       var distribuidos = 0;
       fila.forEach(function(p) {
         const modal = p.modal || '';
         const isReparo = p.statusVist === 'Reparos pendentes';
 
-        // Snapshot atual de cada colaboradora
+        // Snapshot atual de cada colaboradora — apenas contratos distribuídos após a data de corte
         var scores = ativos.map(function(u) {
-          const pastasDela = S.prots.filter(function(x) { return x.colabDist === u.nome && x.statusAcerto !== 'Finalizado'; });
+          const pastasDela = S.prots.filter(function(x) {
+            return x.colabDist === u.nome &&
+                   x.statusAcerto !== 'Finalizado' &&
+                   (x.dataDist || '') >= dataCorteSt;
+          });
           const total = pastasDela.length;
           const reparos = pastasDela.filter(function(x) { return x.statusVist === 'Reparos pendentes'; }).length;
           const aprovadas = total - reparos;
-          const lastModal = pastasDela.length ? pastasDela[pastasDela.length - 1].modal : null;
-          // Há quanto tempo não recebe essa modalidade (em número de pastas distribuídas depois)
           var idxUltimaModal = -1;
           for (var i = pastasDela.length - 1; i >= 0; i--) {
             if (pastasDela[i].modal === modal) { idxUltimaModal = i; break; }
@@ -1902,7 +1907,6 @@
             total: total,
             reparos: reparos,
             aprovadas: aprovadas,
-            lastModal: lastModal,
             distanciaModal: distanciaModal
           };
         });
