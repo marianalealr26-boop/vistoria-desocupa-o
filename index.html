@@ -1033,20 +1033,6 @@
       const filtrados = d2Filtro ? dist.filter(function(p) { return p.colabDist === d2Filtro && p.statusAcerto !== 'Finalizado'; }) : [];
 
       c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Dashboard Desocupacao</h1><p class="section-subtitle">Visao geral do processo de desocupacao</p></div></div>' +
-
-      // Cards resumo geral no topo
-      '<div class="card animate-in" style="margin-bottom:20px;padding:16px 20px;background:linear-gradient(135deg,#1e3a5f,#2563EB);border:none">' +
-        '<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:12px">Visão Geral do Processo</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:12px">' +
-          '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:white">' + totalAtivos + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Total Ativos</div></div>' +
-          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:#FCD34D">' + aguardandoDist + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">A distribuir</div></div>' +
-          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:#93C5FD">' + encerrar + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Encerrar</div></div>' +
-          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:#FCA5A5">' + pendente + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Pendente</div></div>' +
-          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:#6EE7B7">' + emAndamento + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Em andamento</div></div>' +
-          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:#C4B5FD">' + finMes + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Finalizados/mês</div></div>' +
-          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:white">' + (tempoMedio > 0 ? tempoMedio + 'd' : '—') + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Tempo médio</div></div>' +
-        '</div>' +
-      '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px">' +
         '<div class="stat-card animate-in stagger-1" style="' + (aguardandoDist > 0 ? 'border:2px solid var(--warning)' : '') + '"><div class="stat-icon stat-icon-amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="12"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-content"><div class="stat-value" style="' + (aguardandoDist > 0 ? 'color:var(--warning)' : '') + '" onclick="goTab(\'dist\')" style="cursor:pointer">' + aguardandoDist + '</div><div class="stat-label">A distribuir</div></div></div>' +
         '<div class="stat-card animate-in stagger-2"><div class="stat-icon stat-icon-blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><div class="stat-content"><div class="stat-value">' + encerrar + '</div><div class="stat-label">Encerrar aluguel</div></div></div>' +
@@ -1072,12 +1058,12 @@
           return '<div class="colab-row" style="cursor:pointer;' + (ativo ? 'background:var(--accent-light);' : '') + '" onclick="d2Filtro=\'' + u.nome + '\';rD2(document.getElementById(\'CNT\'),document.getElementById(\'SB\'))">' +
             '<div class="avatar ' + AVATAR_COLORS[u.cor % AVATAR_COLORS.length] + '">' + u.ini + '</div>' +
             '<div style="flex:1;margin-left:12px"><div style="font-weight:600">' + u.nome + '</div><div style="font-size:11px;color:var(--fg-muted)">Ativos: ' + u.total + ' contrato' + (u.total !== 1 ? 's' : '') + (u.semMov > 0 ? ' · <span style="color:var(--warning);font-weight:600">' + u.semMov + ' parado' + (u.semMov !== 1 ? 's' : '') + '</span>' : '') + '</div></div>' +
-            '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-end">' +
-              '<span class="badge badge-primary" title="Encerrar aluguel" style="min-width:24px;text-align:center">' + u.encerrar + '</span>' +
-              '<span class="badge badge-warning" title="Pendente" style="min-width:24px;text-align:center">' + u.pendente + '</span>' +
-              '<span class="badge badge-success" title="Em andamento" style="min-width:24px;text-align:center">' + u.emAndamento + '</span>' +
-              '<span class="badge" style="background:rgba(139,92,246,0.15);color:#7C3AED;min-width:24px;text-align:center" title="Finalizados">✓ ' + u.finalizados + '</span>' +
-              (u.tempoMed !== '—' ? '<span class="badge badge-neutral" title="Tempo médio acerto">⏱ ' + u.tempoMed + '</span>' : '') +
+            '<div style="display:flex;gap:4px;align-items:center;flex-wrap:nowrap">' +
+              '<span class="badge badge-primary" title="Encerrar aluguel" style="min-width:26px;text-align:center;justify-content:center">' + u.encerrar + '</span>' +
+              '<span class="badge badge-warning" title="Pendente" style="min-width:26px;text-align:center;justify-content:center">' + u.pendente + '</span>' +
+              '<span class="badge badge-success" title="Em andamento" style="min-width:26px;text-align:center;justify-content:center">' + u.emAndamento + '</span>' +
+              '<span class="badge" style="background:rgba(139,92,246,0.15);color:#7C3AED;min-width:26px;text-align:center;justify-content:center" title="Finalizados">✓ ' + u.finalizados + '</span>' +
+              (u.tempoMed !== '—' ? '<span class="badge badge-neutral" title="Tempo médio acerto" style="white-space:nowrap">⏱ ' + u.tempoMed + '</span>' : '') +
             '</div>' +
             (ativo ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" style="margin-left:8px"><polyline points="20 6 9 17 4 12"/></svg>' : '') +
           '</div>';
@@ -2022,21 +2008,18 @@
       const totalEncerrar = totalEquipe.filter(function(p) { return p.statusAcerto === 'Encerrar aluguel'; }).length;
       const totalPendente = totalEquipe.filter(function(p) { return p.statusAcerto === 'Pendente'; }).length;
       const totalAndamento = totalEquipe.filter(function(p) { return p.statusAcerto === 'Em andamento'; }).length;
-      const totalFinalizado = S.fins.length;
-      const mesStrEq = hojeDate.getFullYear() + '-' + String(hojeDate.getMonth()+1).padStart(2,'0');
-      const totalFinMes = S.fins.filter(function(f) { return f.data && f.data.startsWith(mesStrEq); }).length;
+      const totalAtivosEq = totalEncerrar + totalPendente + totalAndamento;
 
       c.innerHTML =
       // Barra de totais da equipe
       '<div class="card animate-in" style="padding:14px 20px;margin-bottom:16px;background:linear-gradient(135deg,#1e3a5f,#2563EB);border:none">' +
         '<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:10px">Visão Geral da Equipe</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">' +
-          '<div style="text-align:center"><div style="font-size:20px;font-weight:700;color:#FCD34D">' + totalADist + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">A distribuir</div></div>' +
+        '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">' +
+          '<div style="text-align:center"><div style="font-size:20px;font-weight:700;color:white">' + totalAtivosEq + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Total ativos</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:#FCD34D">' + totalADist + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">A distribuir</div></div>' +
           '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:#93C5FD">' + totalEncerrar + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Encerrar</div></div>' +
           '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:#FCA5A5">' + totalPendente + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Pendente</div></div>' +
           '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:#6EE7B7">' + totalAndamento + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Em andamento</div></div>' +
-          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:#C4B5FD">' + totalFinMes + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Finalizados/mês</div></div>' +
-          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:white">' + totalFinalizado + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Total finalizado</div></div>' +
         '</div>' +
       '</div>' +
       '<div class="card animate-in" style="padding:20px 24px;margin-bottom:20px;background:linear-gradient(135deg,#2563EB,#3B82F6);border:none">' +
@@ -2132,8 +2115,10 @@
         else if (diasRestantes <= 7 && diasRestantes >= 0) rowStyle = 'background:rgba(217,119,6,0.05)';
         // Pronto para acerto — laudo entregue E orçamento finalizado
         const prontoAcerto = p.laudoPendente && p.laudo === 'Entregue' && p.statusOrc === 'Finalizado';
+        let rowBg = rowStyle;
+        if (prontoAcerto) rowBg = 'background:rgba(5,150,105,0.08);border-left:3px solid var(--success)';
 
-        return '<tr style="' + rowStyle + (prontoAcerto ? 'border-left:3px solid var(--success)' : '') + '">' +
+        return '<tr style="' + rowBg + '">' +
           '<td><span class="badge badge-primary">' + p.contrato + '</span>' + (isNovo ? '<span class="badge badge-success" style="margin-left:4px;font-size:9px">Novo</span>' : '') + (prontoAcerto ? '<span class="badge badge-success" style="margin-left:4px;font-size:9px">✓ Pronto para acerto</span>' : '') + '</td>' +
           '<td style="font-weight:600;max-width:200px">' + p.end + '</td>' +
           '<td><span class="badge badge-neutral">' + (p.modal || '-') + '</span></td>' +
