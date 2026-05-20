@@ -986,18 +986,19 @@
       const now = new Date();
       const mesAtual = now.getMonth();
       const anoAtual = now.getFullYear();
-      const dist = S.prots.filter(function(p) { return p.colabDist; });
-      const aguardandoDist = S.prots.filter(function(p) { return !p.colabDist; }).length; // fila de distribuição
+      const dist = S.prots.filter(function(p) { return p.colabDist && p.colabDist !== 'Ja distribuido'; });
+      const aguardandoDist = S.prots.filter(function(p) { return !p.colabDist; }).length;
       const encerrar = dist.filter(function(p) { return p.statusAcerto === 'Encerrar aluguel'; }).length;
       const pendente = dist.filter(function(p) { return p.statusAcerto === 'Pendente'; }).length;
       const emAndamento = dist.filter(function(p) { return p.statusAcerto === 'Em andamento'; }).length;
       const finalizado = dist.filter(function(p) { return p.statusAcerto === 'Finalizado'; }).length;
+      const totalAtivos = encerrar + pendente + emAndamento;
       const finMes = S.fins.filter(function(f) { if (!f.data) return false; const d = new Date(f.data + 'T12:00:00'); return d.getMonth() === mesAtual && d.getFullYear() === anoAtual; }).length;
       const alertaPrazo = dist.filter(function(p) { if (p.statusAcerto === 'Finalizado' || !p.enc) return false; const prazoDias = (p.modal === 'CredAluga' || p.modal === 'Loft' || p.modal === 'Seguro Fianca') ? 30 : 45; const dias = diasR(adD(p.enc, prazoDias)); return dias !== null && dias <= 10; })
         .sort(function(a, b) {
           const pA = (a.modal === 'CredAluga' || a.modal === 'Loft' || a.modal === 'Seguro Fianca') ? 30 : 45;
           const pB = (b.modal === 'CredAluga' || b.modal === 'Loft' || b.modal === 'Seguro Fianca') ? 30 : 45;
-          return diasR(adD(a.enc, pA)) - diasR(adD(b.enc, pB)); // mais urgente (menor/negativo) primeiro
+          return diasR(adD(a.enc, pA)) - diasR(adD(b.enc, pB));
         });
       const alertaVencidos = alertaPrazo.filter(function(p) { const prazoDias = (p.modal === 'CredAluga' || p.modal === 'Loft' || p.modal === 'Seguro Fianca') ? 30 : 45; return diasR(adD(p.enc, prazoDias)) < 0; });
       const comTempo = S.fins.filter(function(f) { return f.dataPendente && f.data; });
@@ -1033,7 +1034,19 @@
 
       c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Dashboard Desocupacao</h1><p class="section-subtitle">Visao geral do processo de desocupacao</p></div></div>' +
 
-      // Cards de status
+      // Cards resumo geral no topo
+      '<div class="card animate-in" style="margin-bottom:20px;padding:16px 20px;background:linear-gradient(135deg,#1e3a5f,#2563EB);border:none">' +
+        '<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:12px">Visão Geral do Processo</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:12px">' +
+          '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:white">' + totalAtivos + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Total Ativos</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:#FCD34D">' + aguardandoDist + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">A distribuir</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:#93C5FD">' + encerrar + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Encerrar</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:#FCA5A5">' + pendente + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Pendente</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:#6EE7B7">' + emAndamento + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Em andamento</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:#C4B5FD">' + finMes + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Finalizados/mês</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:22px;font-weight:700;color:white">' + (tempoMedio > 0 ? tempoMedio + 'd' : '—') + '</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Tempo médio</div></div>' +
+        '</div>' +
+      '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px">' +
         '<div class="stat-card animate-in stagger-1" style="' + (aguardandoDist > 0 ? 'border:2px solid var(--warning)' : '') + '"><div class="stat-icon stat-icon-amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="12"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-content"><div class="stat-value" style="' + (aguardandoDist > 0 ? 'color:var(--warning)' : '') + '" onclick="goTab(\'dist\')" style="cursor:pointer">' + aguardandoDist + '</div><div class="stat-label">A distribuir</div></div></div>' +
         '<div class="stat-card animate-in stagger-2"><div class="stat-icon stat-icon-blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><div class="stat-content"><div class="stat-value">' + encerrar + '</div><div class="stat-label">Encerrar aluguel</div></div></div>' +
@@ -1059,11 +1072,11 @@
           return '<div class="colab-row" style="cursor:pointer;' + (ativo ? 'background:var(--accent-light);' : '') + '" onclick="d2Filtro=\'' + u.nome + '\';rD2(document.getElementById(\'CNT\'),document.getElementById(\'SB\'))">' +
             '<div class="avatar ' + AVATAR_COLORS[u.cor % AVATAR_COLORS.length] + '">' + u.ini + '</div>' +
             '<div style="flex:1;margin-left:12px"><div style="font-weight:600">' + u.nome + '</div><div style="font-size:11px;color:var(--fg-muted)">Ativos: ' + u.total + ' contrato' + (u.total !== 1 ? 's' : '') + (u.semMov > 0 ? ' · <span style="color:var(--warning);font-weight:600">' + u.semMov + ' parado' + (u.semMov !== 1 ? 's' : '') + '</span>' : '') + '</div></div>' +
-            '<div style="display:flex;gap:6px">' +
-              '<span class="badge badge-primary" title="Encerrar aluguel">' + u.encerrar + '</span>' +
-              '<span class="badge badge-warning" title="Pendente">' + u.pendente + '</span>' +
-              '<span class="badge badge-success" title="Em andamento">' + u.emAndamento + '</span>' +
-              '<span class="badge" style="background:rgba(139,92,246,0.15);color:#7C3AED" title="Finalizados">✓ ' + u.finalizados + '</span>' +
+            '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-end">' +
+              '<span class="badge badge-primary" title="Encerrar aluguel" style="min-width:24px;text-align:center">' + u.encerrar + '</span>' +
+              '<span class="badge badge-warning" title="Pendente" style="min-width:24px;text-align:center">' + u.pendente + '</span>' +
+              '<span class="badge badge-success" title="Em andamento" style="min-width:24px;text-align:center">' + u.emAndamento + '</span>' +
+              '<span class="badge" style="background:rgba(139,92,246,0.15);color:#7C3AED;min-width:24px;text-align:center" title="Finalizados">✓ ' + u.finalizados + '</span>' +
               (u.tempoMed !== '—' ? '<span class="badge badge-neutral" title="Tempo médio acerto">⏱ ' + u.tempoMed + '</span>' : '') +
             '</div>' +
             (ativo ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" style="margin-left:8px"><polyline points="20 6 9 17 4 12"/></svg>' : '') +
@@ -1780,7 +1793,7 @@
         // Fila
         '<div class="card animate-in stagger-1" style="padding:24px"><h3 style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:16px">Fila (' + fila.length + ')</h3>' +
         (fila.length ? '<div style="display:flex;flex-direction:column;gap:10px">' + fila.map(function(p) { 
-          return '<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:10px"><span class="badge badge-primary">' + p.contrato + '</span>' + (p.statusVist === 'Reparos pendentes' ? '<span class="reparos-badge">Rep. Pendentes</span>' : '') + '<span style="font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + p.end + '</span><select class="form-input form-select" style="width:150px;padding:8px 12px;font-size:12px" onchange="distManual(\'' + p.id + '\', this.value)"><option value="">Atribuir...</option>' + colabs().map(function(u) { return '<option value="' + u.nome + '">' + u.nome + '</option>'; }).join('') + '</select></div>'; 
+          return '<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:10px"><span class="badge badge-primary">' + p.contrato + '</span>' + (p.statusVist === 'Reparos pendentes' ? '<span class="reparos-badge">Rep. Pendentes</span>' : '') + (p.modal ? '<span class="badge badge-neutral" style="font-size:10px">' + p.modal + '</span>' : '') + '<span style="font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + p.end + '</span><select class="form-input form-select" style="width:150px;padding:8px 12px;font-size:12px" onchange="distManual(\'' + p.id + '\', this.value)"><option value="">Atribuir...</option>' + colabs().map(function(u) { return '<option value="' + u.nome + '">' + u.nome + '</option>'; }).join('') + '</select></div>'; 
         }).join('') + '</div>' : '<p style="color:var(--fg-subtle);font-size:13px">Fila vazia.</p>') +
 
         // Rodízio — seleção de colaboradoras
@@ -2003,8 +2016,29 @@
       const hora = new Date().getHours();
       const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
 
+      // Totais gerais da equipe
+      const totalEquipe = S.prots.filter(function(p) { return p.colabDist && p.colabDist !== 'Ja distribuido'; });
+      const totalADist = S.prots.filter(function(p) { return !p.colabDist; }).length;
+      const totalEncerrar = totalEquipe.filter(function(p) { return p.statusAcerto === 'Encerrar aluguel'; }).length;
+      const totalPendente = totalEquipe.filter(function(p) { return p.statusAcerto === 'Pendente'; }).length;
+      const totalAndamento = totalEquipe.filter(function(p) { return p.statusAcerto === 'Em andamento'; }).length;
+      const totalFinalizado = S.fins.length;
+      const mesStrEq = hojeDate.getFullYear() + '-' + String(hojeDate.getMonth()+1).padStart(2,'0');
+      const totalFinMes = S.fins.filter(function(f) { return f.data && f.data.startsWith(mesStrEq); }).length;
+
       c.innerHTML =
-      // Painel de boas-vindas
+      // Barra de totais da equipe
+      '<div class="card animate-in" style="padding:14px 20px;margin-bottom:16px;background:linear-gradient(135deg,#1e3a5f,#2563EB);border:none">' +
+        '<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:10px">Visão Geral da Equipe</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">' +
+          '<div style="text-align:center"><div style="font-size:20px;font-weight:700;color:#FCD34D">' + totalADist + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">A distribuir</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:#93C5FD">' + totalEncerrar + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Encerrar</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:#FCA5A5">' + totalPendente + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Pendente</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:#6EE7B7">' + totalAndamento + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Em andamento</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:#C4B5FD">' + totalFinMes + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Finalizados/mês</div></div>' +
+          '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)"><div style="font-size:20px;font-weight:700;color:white">' + totalFinalizado + '</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">Total finalizado</div></div>' +
+        '</div>' +
+      '</div>' +
       '<div class="card animate-in" style="padding:20px 24px;margin-bottom:20px;background:linear-gradient(135deg,#2563EB,#3B82F6);border:none">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">' +
           '<div><div style="font-size:18px;font-weight:700;color:white">' + saudacao + ', ' + n.split(' ')[0] + '! 👋</div>' +
@@ -2096,8 +2130,11 @@
         let rowStyle = '';
         if (diasRestantes < 0) rowStyle = 'background:rgba(220,38,38,0.05)';
         else if (diasRestantes <= 7 && diasRestantes >= 0) rowStyle = 'background:rgba(217,119,6,0.05)';
-        return '<tr style="' + rowStyle + '">' +
-          '<td><span class="badge badge-primary">' + p.contrato + '</span>' + (isNovo ? '<span class="badge badge-success" style="margin-left:4px;font-size:9px">Novo</span>' : '') + '</td>' +
+        // Pronto para acerto — laudo entregue E orçamento finalizado
+        const prontoAcerto = p.laudoPendente && p.laudo === 'Entregue' && p.statusOrc === 'Finalizado';
+
+        return '<tr style="' + rowStyle + (prontoAcerto ? 'border-left:3px solid var(--success)' : '') + '">' +
+          '<td><span class="badge badge-primary">' + p.contrato + '</span>' + (isNovo ? '<span class="badge badge-success" style="margin-left:4px;font-size:9px">Novo</span>' : '') + (prontoAcerto ? '<span class="badge badge-success" style="margin-left:4px;font-size:9px">✓ Pronto para acerto</span>' : '') + '</td>' +
           '<td style="font-weight:600;max-width:200px">' + p.end + '</td>' +
           '<td><span class="badge badge-neutral">' + (p.modal || '-') + '</span></td>' +
           '<td style="white-space:nowrap">' + encFormatted + '</td>' +
@@ -2348,7 +2385,8 @@
     }
     
     function rFin(c, sb) { 
-      c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Finalizados</h1></div></div><div class="card animate-in"><div class="filter-bar"><div class="search-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="search-input" id="fin-q" placeholder="Buscar por contrato ou endereço..." oninput="rlFin()"></div><span class="filter-count" id="fin-count"></span></div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereço</th><th>Modalidade</th><th>Data Finalização</th><th>Finalizado por</th><th>Tempo Acerto</th></tr></thead><tbody id="fb"></tbody></table></div></div>'; 
+      const canRevert = S.user && (S.user.role === 'admin' || S.user.role === 'gestora_desocupacao');
+      c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Finalizados</h1></div></div><div class="card animate-in"><div class="filter-bar"><div class="search-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="search-input" id="fin-q" placeholder="Buscar por contrato ou endereço..." oninput="rlFin()"></div><span class="filter-count" id="fin-count"></span></div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereço</th><th>Modalidade</th><th>Data Finalização</th><th>Finalizado por</th><th>Tempo Acerto</th>' + (canRevert ? '<th>Ação</th>' : '') + '</tr></thead><tbody id="fb"></tbody></table></div></div>'; 
       rlFin(); 
       sb.innerHTML = '<div class="card" style="padding:20px;text-align:center"><div style="font-size:42px;font-weight:700;color:var(--accent);font-family:\'Fraunces\',serif">' + S.fins.length + '</div><div style="font-size:12px;color:var(--fg-subtle)">contratos finalizados</div></div>'; 
       showSidebar(true); 
@@ -2357,6 +2395,7 @@
     function rlFin() { 
       const b = document.getElementById('fb'); 
       if (!b) return;
+      const canRevert = S.user && (S.user.role === 'admin' || S.user.role === 'gestora_desocupacao');
       const q = ((document.getElementById('fin-q')||{value:''}).value||'').toLowerCase();
       const list = S.fins.slice().reverse().filter(function(f) {
         if (!q) return true;
@@ -2372,8 +2411,35 @@
           const dias = Math.ceil((fim - ini) / 86400000);
           tempoAcerto = isNaN(dias) ? '-' : (dias + ' dia' + (dias !== 1 ? 's' : ''));
         }
-        return '<tr><td><span class="badge badge-primary">' + f.contrato + '</span></td><td style="font-weight:600">' + f.end + '</td><td><span class="badge badge-neutral">' + (f.modal || '-') + '</span></td><td>' + fmtData(f.data) + '</td><td><span style="font-size:13px;font-weight:500">' + (f.finalizadoPor || '—') + '</span></td><td>' + tempoAcerto + '</td></tr>'; 
-      }).join('') : '<tr><td colspan="6" style="padding:24px;color:var(--fg-subtle)">Nenhum contrato finalizado.</td></tr>'; 
+        const revertBtn = canRevert ? '<td><button class="btn btn-secondary btn-sm" onclick="revertFinalizado(\'' + f.id + '\')" title="Reverter para Em andamento">↩ Reverter</button></td>' : '';
+        return '<tr><td><span class="badge badge-primary">' + f.contrato + '</span></td><td style="font-weight:600">' + f.end + '</td><td><span class="badge badge-neutral">' + (f.modal || '-') + '</span></td><td>' + fmtData(f.data) + '</td><td><span style="font-size:13px;font-weight:500">' + (f.finalizadoPor || '—') + '</span></td><td>' + tempoAcerto + '</td>' + revertBtn + '</tr>'; 
+      }).join('') : '<tr><td colspan="' + (canRevert ? '7' : '6') + '" style="padding:24px;color:var(--fg-subtle)">Nenhum contrato finalizado.</td></tr>'; 
+    }
+
+    async function revertFinalizado(id) {
+      const f = S.fins.find(function(x) { return x.id == id; });
+      if (!f) return;
+      if (!confirm('Reverter "' + f.contrato + ' - ' + f.end + '" para Em andamento?')) return;
+      
+      // Restaura o protocolo com status Em andamento
+      const pExist = S.prots.find(function(p) { return p.contrato === f.contrato; });
+      if (pExist) {
+        pExist.statusAcerto = 'Em andamento';
+        await dbSaveProt(pExist);
+      } else {
+        // Cria novo protocolo
+        const novoProt = { id: Date.now(), agId: 0, contrato: f.contrato, end: f.end, data: new Date().toISOString().split('T')[0], modal: f.modal||'', statusVist: 'Aprovada', enc: '', limite: '', laudo: 'Nao', laudoPendente: false, colabDist: f.finalizadoPor||'', dataDist: new Date().toISOString().split('T')[0], statusAcerto: 'Em andamento', dataPendente: null, obs: '', statusOrc: 'Aguardando orcamento', obsOrc: '', notas: [] };
+        S.prots.push(novoProt);
+        await dbSaveProt(novoProt);
+      }
+
+      // Remove dos finalizados
+      await fetch(SB_URL + '/rest/v1/finalizados?id=eq.' + id, { method: 'DELETE', headers: SB_HDR });
+      S.fins = S.fins.filter(function(x) { return x.id != id; });
+      
+      addLog(f.contrato, 'Revertido de Finalizado para Em andamento', 'Por: ' + (S.user ? S.user.nome : '—'));
+      showToast('Contrato revertido para Em andamento!', 'success');
+      rlFin();
     }
     
     // ── BUSCA GLOBAL ─────────────────────────────────────────────────────────
