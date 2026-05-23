@@ -1398,6 +1398,7 @@
       const registrados = conc.filter(function(a) { return S.prots.find(function(p) { return p.agId === a.id; }); });
       const ordenados = pendentes.concat(registrados);
       c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Protocolo de Chaves</h1></div></div>' + sBar(2) + 
+      '<div id="pkf"></div>' +
       '<div class="card animate-in"><div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:12px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase">Vistorias Encerradas</h3><div style="font-size:12px;color:var(--fg-subtle)"><span style="color:var(--warning);font-weight:600">' + pendentes.length + ' pendentes</span> · <span style="color:var(--success);font-weight:600">' + registrados.length + ' registrados</span></div></div>' + 
       (ordenados.length ? '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereco</th><th>Protocolo</th><th>Registrado em</th><th>Registrado por</th><th>Acao</th></tr></thead><tbody>' + 
       ordenados.map(function(a) { 
@@ -1405,7 +1406,7 @@
         const dataReg = prot && prot.dataRegistro ? fmtData(prot.dataRegistro) : '—';
         const regPor = prot && prot.registradoPor ? prot.registradoPor : '—';
         return '<tr style="' + (prot ? 'opacity:0.85' : '') + '"><td><span class="badge badge-primary">' + a.contrato + '</span></td><td style="font-weight:600">' + a.end + '</td><td>' + (prot ? '<span class="badge badge-success">Registrado</span>' : '<span class="badge badge-warning">Pendente</span>') + '</td><td style="font-size:12px;color:var(--fg-muted)">' + dataReg + '</td><td style="font-size:12px;color:var(--fg-muted)">' + regPor + '</td><td>' + (prot ? '' : '<button class="btn btn-primary btn-sm" onclick="aPk(\'' + a.id + '\')">Preencher</button>') + '</td></tr>'; 
-      }).join('') + '</tbody></table></div>' : '<p style="padding:24px;color:var(--fg-subtle)">Nenhuma vistoria encerrada.</p>') + '</div><div id="pkf"></div>'; 
+      }).join('') + '</tbody></table></div>' : '<p style="padding:24px;color:var(--fg-subtle)">Nenhuma vistoria encerrada.</p>') + '</div>'; 
       showSidebar(false); 
     }
     function upAgObs(id, v) {
@@ -1460,11 +1461,10 @@
         '<div id="pk-e" style="display:none;padding:12px 16px;background:var(--danger-light);color:var(--danger);border-radius:10px;font-size:13px;margin-top:16px"></div>' +
         '<button class="btn btn-primary btn-lg" onclick="svPk()" style="width:100%;margin-top:20px">Salvar</button>' +
         '</div>';
-      // Scroll para o topo do container
+      // Scroll para o topo
       setTimeout(function() {
-        const cnt = document.getElementById('CNT');
-        if (cnt) cnt.scrollTop = 0;
-        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
       }, 50);
     }
     // Helper: verifica se laudo é obrigatório conforme modalidade e status vistoria
