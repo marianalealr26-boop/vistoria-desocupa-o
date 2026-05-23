@@ -1460,12 +1460,12 @@
         '<div id="pk-e" style="display:none;padding:12px 16px;background:var(--danger-light);color:var(--danger);border-radius:10px;font-size:13px;margin-top:16px"></div>' +
         '<button class="btn btn-primary btn-lg" onclick="svPk()" style="width:100%;margin-top:20px">Salvar</button>' +
         '</div>';
-      // Scroll para o topo
+      // Scroll para o topo do container
       setTimeout(function() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         const cnt = document.getElementById('CNT');
-        if (cnt) cnt.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 100);
+        if (cnt) cnt.scrollTop = 0;
+        window.scrollTo(0, 0);
+      }, 50);
     }
     // Helper: verifica se laudo é obrigatório conforme modalidade e status vistoria
     function laudoObrigatorio(modal, statusVist) {
