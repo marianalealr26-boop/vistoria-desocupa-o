@@ -1446,8 +1446,10 @@
       if (!ag) return;
       S.pkEdit = agId;
       const hoje = new Date().toISOString().split('T')[0];
-      document.getElementById('pkf').innerHTML =
-        '<div class="card animate-in" style="margin-top:20px;padding:24px">' +
+      const pkfEl = document.getElementById('pkf');
+      if (!pkfEl) return;
+      pkfEl.innerHTML =
+        '<div class="card animate-in" style="margin-bottom:20px;padding:24px">' +
         '<h3 style="font-size:14px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:20px">Protocolo — ' + ag.contrato + '</h3>' +
         '<div style="padding:12px 16px;background:var(--accent-light);border-radius:10px;font-size:13px;color:var(--accent);font-weight:500;margin-bottom:20px">Imovel: <strong>' + ag.end + '</strong></div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">' +
@@ -1461,11 +1463,8 @@
         '<div id="pk-e" style="display:none;padding:12px 16px;background:var(--danger-light);color:var(--danger);border-radius:10px;font-size:13px;margin-top:16px"></div>' +
         '<button class="btn btn-primary btn-lg" onclick="svPk()" style="width:100%;margin-top:20px">Salvar</button>' +
         '</div>';
-      // Scroll para o topo
-      setTimeout(function() {
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-      }, 50);
+      // Scroll para o pkf que está no topo
+      pkfEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     // Helper: verifica se laudo é obrigatório conforme modalidade e status vistoria
     function laudoObrigatorio(modal, statusVist) {
