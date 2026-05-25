@@ -774,7 +774,13 @@
         return { nome: v.nome, cor: v.cor, ini: v.ini, aguardando: aguardando, atribuidas: atribuidas, concluidas: concluidas, total: total };
       }).filter(function(v) { return v.total > 0 || v.concluidas > 0; });
       
-      const paraReagendar = S.ags.filter(function(a) { return a.status === 'Aguardando retorno'; });
+      const paraReagendar = S.ags.filter(function(a) { return a.status === 'Aguardando retorno'; })
+        .sort(function(a, b) {
+          // Mais antigos primeiro (maior número de dias parado)
+          const dataA = a.dataCad || a.data || '';
+          const dataB = b.dataCad || b.data || '';
+          return dataA.localeCompare(dataB); // menor data = mais antigo = aparece primeiro
+        });
 
       // Orçamentos — separa vencidos e alerta
       const todosOrc = S.prots.filter(function(p) { return p.statusVist === 'Reparos pendentes' && p.statusOrc !== 'Finalizado'; });
