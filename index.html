@@ -747,6 +747,34 @@
     }
 
     async function rD1(c, sb) { 
+      // Busca retificações pendentes no início
+      let retPainelHtml = '';
+      try {
+        const retRows = await sbGet('retificacoes', 'status=eq.Pendente&order=created_at.asc');
+        if (retRows && retRows.length > 0) {
+          const retVenc = retRows.filter(function(r) { return r.created_at && Math.floor((new Date() - new Date(r.created_at)) / 3600000) > 24; });
+          retPainelHtml = '<div class="card animate-in" style="margin-bottom:20px;border:2px solid ' + (retVenc.length > 0 ? 'var(--danger)' : 'var(--warning)') + '">' +
+            '<div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">' +
+              '<div style="display:flex;align-items:center;gap:10px">' +
+                '<h3 style="font-size:13px;font-weight:700;color:' + (retVenc.length > 0 ? 'var(--danger)' : 'var(--warning)') + ';text-transform:uppercase">🔄 Retificações Pendentes (' + retRows.length + ')</h3>' +
+                (retVenc.length > 0 ? '<span class="badge badge-danger">' + retVenc.length + ' vencida' + (retVenc.length !== 1 ? 's' : '') + '</span>' : '') +
+              '</div>' +
+              '<button class="btn btn-primary btn-sm" onclick="goTab(\'ret\')">Ver todas →</button>' +
+            '</div>' +
+            '<div style="max-height:180px;overflow-y:auto">' +
+            retRows.slice(0,4).map(function(r) {
+              const horas = r.created_at ? Math.floor((new Date() - new Date(r.created_at)) / 3600000) : 0;
+              const venc = horas > 24;
+              return '<div class="colab-row" style="' + (venc ? 'background:rgba(220,38,38,0.05)' : '') + '">' +
+                '<span class="badge badge-primary">' + r.contrato + '</span>' +
+                '<span class="badge ' + (r.tipo === 'Laudo' ? 'badge-warning' : 'badge-primary') + '" style="margin-left:6px;font-size:10px">' + r.tipo + '</span>' +
+                '<div style="flex:1;margin-left:10px;font-size:13px;font-weight:600">' + r.end_imovel + '</div>' +
+                '<span style="font-size:11px;color:' + (venc ? 'var(--danger)' : 'var(--warning)') + ';font-weight:600">' + (venc ? 'Vencido ' + (horas-24) + 'h' : horas + 'h de 24h') + '</span>' +
+              '</div>';
+            }).join('') +
+            '</div></div>';
+        }
+      } catch(e) {}
       const pend = S.ags.filter(function(a) { return a.status === 'Aguardando'; }).length;
       const atrib = S.ags.filter(function(a) { return a.status === 'Atribuido'; }).length;
       const conc = S.ags.filter(function(a) { return a.status === 'Concluido'; }).length;
@@ -884,6 +912,9 @@
       '</div>'
       : '') +
 
+      // Painel retificações pendentes (antes das pastas paradas)
+      retPainelHtml +
+
       // Painel de pastas paradas há mais de 48h úteis
       (paradas48.length ?
       '<div class="card animate-in" style="margin-bottom:20px;border:2px solid var(--warning)">' +
@@ -946,34 +977,6 @@
         '</div>' +
       '</div>';
 
-      // Painel retificações pendentes
-      try {
-        const retRows = await sbGet('retificacoes', 'status=eq.Pendente&order=created_at.asc');
-        if (retRows && retRows.length > 0) {
-          const retVenc = retRows.filter(function(r) { return r.created_at && Math.floor((new Date() - new Date(r.created_at)) / 3600000) > 24; });
-          c.innerHTML += '<div class="card animate-in" style="margin-bottom:20px;border:2px solid ' + (retVenc.length > 0 ? 'var(--danger)' : 'var(--warning)') + '">' +
-            '<div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">' +
-              '<div style="display:flex;align-items:center;gap:10px">' +
-                '<h3 style="font-size:13px;font-weight:700;color:' + (retVenc.length > 0 ? 'var(--danger)' : 'var(--warning)') + ';text-transform:uppercase">🔄 Retificações Pendentes (' + retRows.length + ')</h3>' +
-                (retVenc.length > 0 ? '<span class="badge badge-danger">' + retVenc.length + ' vencida' + (retVenc.length !== 1 ? 's' : '') + '</span>' : '') +
-              '</div>' +
-              '<button class="btn btn-primary btn-sm" onclick="goTab(\'ret\')">Ver todas →</button>' +
-            '</div>' +
-            '<div style="max-height:180px;overflow-y:auto">' +
-            retRows.slice(0,4).map(function(r) {
-              const horas = r.created_at ? Math.floor((new Date() - new Date(r.created_at)) / 3600000) : 0;
-              const venc = horas > 24;
-              return '<div class="colab-row" style="' + (venc ? 'background:rgba(220,38,38,0.05)' : '') + '">' +
-                '<span class="badge badge-primary">' + r.contrato + '</span>' +
-                '<span class="badge ' + (r.tipo === 'Laudo' ? 'badge-warning' : 'badge-primary') + '" style="margin-left:6px;font-size:10px">' + r.tipo + '</span>' +
-                '<div style="flex:1;margin-left:10px;font-size:13px;font-weight:600">' + r.end_imovel + '</div>' +
-                '<span style="font-size:11px;color:' + (venc ? 'var(--danger)' : 'var(--warning)') + ';font-weight:600">' + (venc ? 'Vencido ' + (horas-24) + 'h' : horas + 'h de 24h') + '</span>' +
-              '</div>';
-            }).join('') +
-            '</div></div>';
-        }
-      } catch(e) {}
-      
       sb.innerHTML = '<div class="card" style="padding:20px"><h3 style="font-size:12px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:16px">Acesso Rapido</h3>' +
         (orcVencidos.length ? '<button class="btn btn-danger btn-sm" onclick="goTab(\'orc\')" style="width:100%;margin-bottom:8px">⚠ Vencidos (' + orcVencidos.length + ')</button>' : '') +
         (orcAlerta.length ? '<button class="btn btn-warning btn-sm" onclick="goTab(\'orc\')" style="width:100%;margin-bottom:8px">Alerta prazo (' + orcAlerta.length + ')</button>' : '') +
