@@ -668,13 +668,14 @@
     }
     
     const TABS_ADM = [['d1', 'Dashboard'], ['d2', 'Desocupacao'], ['hor', 'Horarios'], ['ag', 'Agendamento'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca'], ['adm', 'Admin']];
-    const TABS_GESTOR_VIST = [['d1', 'Dashboard'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico']];
+    const TABS_GESTOR_VIST = [['d1', 'Dashboard'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['ret', '🔄 Retificar'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico']];
     const TABS_GESTORA_DESOC = [['d2', 'Desocupacao'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca']];
-    const TABS_GESTOR_OP = [['d1', 'Dashboard Vistoria'], ['d2', 'Dashboard Desocupacao'], ['vist', 'Vistoriador'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['equipe', 'Contratos Equipe'], ['desoc', '📋 Desocupacoes']];
+    const TABS_GESTOR_OP = [['d1', 'Dashboard Vistoria'], ['d2', 'Dashboard Desocupacao'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['ret', '🔄 Retificar'], ['equipe', 'Contratos Equipe'], ['desoc', '📋 Desocupacoes']];
+    const TABS_ADM = [['d1', 'Dashboard'], ['d2', 'Desocupacao'], ['hor', 'Horarios'], ['ag', 'Agendamento'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['ret', '🔄 Retificar'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca'], ['adm', 'Admin']];
     const TABS_COL = [['meus', 'Meus Contratos'], ['tarefas', '✓ Tarefas'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['fin', 'Finalizados'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca']];
     const TABS_VIS = [['vist', 'Vistoriador'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['desoc', '📋 Desocupacoes']];
-    const TABS_FIANCA = [['fianca', 'Contratos Fianca'], ['desoc', '📋 Desocupacoes']];
-    const PFN = { d1: rD1, d2: rD2, hor: rHor, ag: rAg, vist: rVist, prot: rProt, laud: rLaud, orc: rOrc, dist: rDist, fin: rFin, adm: rAdm, meus: rMeus, busca: rBusca, hist: rHist, fianca: rFianca, rel: rRelatorio, tarefas: rTarefas, equipe: rEquipe, desoc: rDesoc };
+    const TABS_FIANCA = [['fianca', 'Contratos Fianca'], ['ret', '🔄 Retificar'], ['desoc', '📋 Desocupacoes']];
+    const PFN = { d1: rD1, d2: rD2, hor: rHor, ag: rAg, vist: rVist, prot: rProt, laud: rLaud, orc: rOrc, dist: rDist, fin: rFin, adm: rAdm, meus: rMeus, busca: rBusca, hist: rHist, fianca: rFianca, rel: rRelatorio, tarefas: rTarefas, equipe: rEquipe, desoc: rDesoc, ret: rRetificar };
     
     function buildNav() { 
       const nav = document.getElementById('NAV'); 
@@ -746,7 +747,7 @@
       return horas;
     }
 
-    function rD1(c, sb) { 
+    async function rD1(c, sb) { 
       const pend = S.ags.filter(function(a) { return a.status === 'Aguardando'; }).length;
       const atrib = S.ags.filter(function(a) { return a.status === 'Atribuido'; }).length;
       const conc = S.ags.filter(function(a) { return a.status === 'Concluido'; }).length;
@@ -945,6 +946,34 @@
         }).join('') + '</div>' : '<p style="padding:20px;color:var(--fg-subtle);text-align:center">Nenhum contrato para reagendar.</p>') +
         '</div>' +
       '</div>';
+
+      // Painel retificações pendentes
+      try {
+        const retRows = await sbGet('retificacoes', 'status=eq.Pendente&order=created_at.asc');
+        if (retRows && retRows.length > 0) {
+          const retVenc = retRows.filter(function(r) { return r.created_at && Math.floor((new Date() - new Date(r.created_at)) / 3600000) > 24; });
+          c.innerHTML += '<div class="card animate-in" style="margin-bottom:20px;border:2px solid ' + (retVenc.length > 0 ? 'var(--danger)' : 'var(--warning)') + '">' +
+            '<div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">' +
+              '<div style="display:flex;align-items:center;gap:10px">' +
+                '<h3 style="font-size:13px;font-weight:700;color:' + (retVenc.length > 0 ? 'var(--danger)' : 'var(--warning)') + ';text-transform:uppercase">🔄 Retificações Pendentes (' + retRows.length + ')</h3>' +
+                (retVenc.length > 0 ? '<span class="badge badge-danger">' + retVenc.length + ' vencida' + (retVenc.length !== 1 ? 's' : '') + '</span>' : '') +
+              '</div>' +
+              '<button class="btn btn-primary btn-sm" onclick="goTab(\'ret\')">Ver todas →</button>' +
+            '</div>' +
+            '<div style="max-height:180px;overflow-y:auto">' +
+            retRows.slice(0,4).map(function(r) {
+              const horas = r.created_at ? Math.floor((new Date() - new Date(r.created_at)) / 3600000) : 0;
+              const venc = horas > 24;
+              return '<div class="colab-row" style="' + (venc ? 'background:rgba(220,38,38,0.05)' : '') + '">' +
+                '<span class="badge badge-primary">' + r.contrato + '</span>' +
+                '<span class="badge ' + (r.tipo === 'Laudo' ? 'badge-warning' : 'badge-primary') + '" style="margin-left:6px;font-size:10px">' + r.tipo + '</span>' +
+                '<div style="flex:1;margin-left:10px;font-size:13px;font-weight:600">' + r.end_imovel + '</div>' +
+                '<span style="font-size:11px;color:' + (venc ? 'var(--danger)' : 'var(--warning)') + ';font-weight:600">' + (venc ? 'Vencido ' + (horas-24) + 'h' : horas + 'h de 24h') + '</span>' +
+              '</div>';
+            }).join('') +
+            '</div></div>';
+        }
+      } catch(e) {}
       
       sb.innerHTML = '<div class="card" style="padding:20px"><h3 style="font-size:12px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:16px">Acesso Rapido</h3>' +
         (orcVencidos.length ? '<button class="btn btn-danger btn-sm" onclick="goTab(\'orc\')" style="width:100%;margin-bottom:8px">⚠ Vencidos (' + orcVencidos.length + ')</button>' : '') +
@@ -2858,7 +2887,125 @@
       dbSaveProt(p);
       showToast('Observação salva!', 'success');
     }
-    // ── NÚMEROS DE DESOCUPAÇÃO ────────────────────────────────────────────────
+    // ── LAUDO/ORÇAMENTO RETIFICAR ─────────────────────────────────────────────
+    var S_RET = []; // cache de retificações
+
+    async function loadRetificacoes() {
+      try {
+        const rows = await sbGet('retificacoes', 'order=created_at.desc');
+        S_RET = rows.map(function(r) { return {
+          id: r.id, contrato: r.contrato, end: r.end_imovel, modal: r.modal,
+          tipo: r.tipo, obs: r.obs, status: r.status || 'Pendente',
+          cadastradoPor: r.cadastrado_por || '', data: r.created_at ? r.created_at.split('T')[0] : ''
+        }; });
+      } catch(e) { S_RET = []; }
+    }
+
+    async function rRetificar(c, sb) {
+      await loadRetificacoes();
+      const canCadastrar = S.user && (S.user.role === 'seguro_fianca' || S.user.role === 'admin');
+      const canResolver = S.user && (S.user.role === 'gestor_vistoria' || S.user.role === 'admin' || S.user.role === 'gestor_operacional' || S.user.role === 'vistoriador');
+      const pendentes = S_RET.filter(function(r) { return r.status === 'Pendente'; });
+      const resolvidos = S_RET.filter(function(r) { return r.status === 'Resolvido'; });
+      const hoje = new Date().toISOString().split('T')[0];
+
+      // Calcula vencidos (mais de 24h)
+      const vencidos = pendentes.filter(function(r) {
+        if (!r.data) return false;
+        const diff = Math.floor((new Date() - new Date(r.data + 'T12:00:00')) / 3600000);
+        return diff > 24;
+      });
+
+      c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Retificações</h1><p class="section-subtitle">Laudos e orçamentos para retificar</p></div></div>' +
+
+      // Stats
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">' +
+        '<div class="stat-card animate-in" style="padding:14px 18px' + (pendentes.length > 0 ? ';border-left:3px solid var(--warning)' : '') + '"><div class="stat-value" style="font-size:24px;color:var(--warning)">' + pendentes.length + '</div><div class="stat-label">Pendentes</div></div>' +
+        '<div class="stat-card animate-in" style="padding:14px 18px' + (vencidos.length > 0 ? ';border-left:3px solid var(--danger)' : '') + '"><div class="stat-value" style="font-size:24px;color:var(--danger)">' + vencidos.length + '</div><div class="stat-label">Vencidos (+24h)</div></div>' +
+        '<div class="stat-card animate-in" style="padding:14px 18px"><div class="stat-value" style="font-size:24px;color:var(--success)">' + resolvidos.length + '</div><div class="stat-label">Resolvidos</div></div>' +
+      '</div>' +
+
+      // Formulário de cadastro (só seguro fiança e admin)
+      (canCadastrar ? '<div class="card animate-in" style="padding:20px 24px;margin-bottom:20px">' +
+        '<h3 style="font-size:13px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:16px">Nova Retificação</h3>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">' +
+          '<div class="form-group" style="margin:0"><label class="form-label">Contrato</label><input type="text" class="form-input" id="ret-contrato" placeholder="Ex: 26978"></div>' +
+          '<div class="form-group" style="margin:0"><label class="form-label">Endereço</label><input type="text" class="form-input" id="ret-end" placeholder="Rua, número..."></div>' +
+          '<div class="form-group" style="margin:0"><label class="form-label">Modalidade</label><select class="form-input form-select" id="ret-modal"><option value="">Selecionar</option><option>CredAluga</option><option>Loft</option><option>Seguro Fianca</option></select></div>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 2fr;gap:12px">' +
+          '<div class="form-group" style="margin:0"><label class="form-label">Tipo</label><select class="form-input form-select" id="ret-tipo"><option value="">Selecionar</option><option>Laudo</option><option>Orçamento</option><option>Laudo e Orçamento</option></select></div>' +
+          '<div class="form-group" style="margin:0"><label class="form-label">O que precisa ser alterado</label><input type="text" class="form-input" id="ret-obs" placeholder="Descreva o que precisa ser corrigido..."></div>' +
+        '</div>' +
+        '<button class="btn btn-primary" style="margin-top:12px" onclick="salvarRetificacao()">Cadastrar Retificação</button>' +
+      '</div>' : '') +
+
+      // Lista pendentes
+      (pendentes.length ? '<div class="card animate-in" style="margin-bottom:16px;border:2px solid var(--warning)">' +
+        '<div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">' +
+          '<h3 style="font-size:12px;font-weight:700;color:var(--warning);text-transform:uppercase">Pendentes (' + pendentes.length + ')</h3>' +
+        '</div>' +
+        '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereço</th><th>Modalidade</th><th>Tipo</th><th>O que alterar</th><th>Cadastrado em</th><th>Prazo</th>' + (canResolver ? '<th>Ação</th>' : '') + '</tr></thead><tbody>' +
+        pendentes.map(function(r) {
+          const horasPassadas = r.data ? Math.floor((new Date() - new Date(r.data + 'T12:00:00')) / 3600000) : 0;
+          const vencido = horasPassadas > 24;
+          const prazoTxt = vencido ? '<span style="color:var(--danger);font-weight:700">Vencido ' + (horasPassadas - 24) + 'h</span>' : '<span style="color:var(--warning)">' + (24 - horasPassadas) + 'h restantes</span>';
+          return '<tr style="' + (vencido ? 'background:rgba(220,38,38,0.05)' : '') + '">' +
+            '<td><span class="badge badge-primary">' + r.contrato + '</span></td>' +
+            '<td style="font-weight:600">' + r.end + '</td>' +
+            '<td><span class="badge badge-neutral">' + (r.modal||'-') + '</span></td>' +
+            '<td><span class="badge ' + (r.tipo === 'Laudo' ? 'badge-warning' : r.tipo === 'Orçamento' ? 'badge-primary' : 'badge-danger') + '">' + r.tipo + '</span></td>' +
+            '<td style="max-width:200px;font-size:12px">' + (r.obs||'—') + '</td>' +
+            '<td style="font-size:12px;white-space:nowrap">' + fmtData(r.data) + '<div style="font-size:10px;color:var(--fg-subtle)">' + r.cadastradoPor + '</div></td>' +
+            '<td>' + prazoTxt + '</td>' +
+            (canResolver ? '<td><button class="btn btn-success btn-sm" onclick="resolverRetificacao(\'' + r.id + '\')">✓ Resolvido</button></td>' : '') +
+          '</tr>';
+        }).join('') +
+        '</tbody></table></div></div>' : '') +
+
+      // Lista resolvidos
+      (resolvidos.length ? '<div class="card animate-in">' +
+        '<div style="padding:12px 20px;border-bottom:1px solid var(--border)"><h3 style="font-size:12px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase">Resolvidos (' + resolvidos.length + ')</h3></div>' +
+        '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereço</th><th>Modalidade</th><th>Tipo</th><th>O que foi alterado</th><th>Data</th></tr></thead><tbody>' +
+        resolvidos.map(function(r) {
+          return '<tr style="opacity:0.7"><td><span class="badge badge-primary">' + r.contrato + '</span></td><td style="font-weight:600">' + r.end + '</td><td><span class="badge badge-neutral">' + (r.modal||'-') + '</span></td><td><span class="badge badge-success">' + r.tipo + ' ✓</span></td><td style="font-size:12px">' + (r.obs||'—') + '</td><td>' + fmtData(r.data) + '</td></tr>';
+        }).join('') +
+        '</tbody></table></div></div>' : '') +
+
+      (!pendentes.length && !resolvidos.length ? '<div class="card animate-in"><div class="empty-state"><p>Nenhuma retificação cadastrada.</p></div></div>' : '');
+
+      showSidebar(false);
+    }
+
+    async function salvarRetificacao() {
+      const contrato = (document.getElementById('ret-contrato')||{value:''}).value.trim();
+      const end = (document.getElementById('ret-end')||{value:''}).value.trim();
+      const modal = (document.getElementById('ret-modal')||{value:''}).value;
+      const tipo = (document.getElementById('ret-tipo')||{value:''}).value;
+      const obs = (document.getElementById('ret-obs')||{value:''}).value.trim();
+      if (!contrato || !end || !modal || !tipo || !obs) { showToast('Preencha todos os campos', 'danger'); return; }
+      try {
+        await sbUpsert('retificacoes', {
+          id: Date.now(),
+          contrato: contrato, end_imovel: end, modal: modal, tipo: tipo, obs: obs,
+          status: 'Pendente', cadastrado_por: S.user ? S.user.nome : '',
+          created_at: new Date().toISOString()
+        });
+        showToast('Retificação cadastrada!', 'success');
+        rRetificar(document.getElementById('CNT'), document.getElementById('SB'));
+      } catch(e) { showToast('Erro ao salvar: ' + e.message, 'danger'); }
+    }
+
+    async function resolverRetificacao(id) {
+      try {
+        await fetch(SB_URL + '/rest/v1/retificacoes?id=eq.' + id, {
+          method: 'PATCH', headers: { ...SB_HDR, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'Resolvido' })
+        });
+        showToast('Marcado como resolvido!', 'success');
+        rRetificar(document.getElementById('CNT'), document.getElementById('SB'));
+      } catch(e) { showToast('Erro ao resolver', 'danger'); }
+    }
     var desocDados = {};
     var desocMesAtual = '';
 
