@@ -418,7 +418,7 @@
     function hrsD(s) { if (isDom(s) || isFer(s)) return []; if (isSab(s)) return HSAB; return HSEM; }
     function iso(a, m, d) { return a + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
     function fex(s) { const dt = new Date(s + 'T12:00:00'); return { ds: DPT[dt.getDay()], dia: dt.getDate(), mes: MPT[dt.getMonth()], full: DPT[dt.getDay()] + ', ' + dt.getDate() + ' de ' + MPT[dt.getMonth()] }; }
-    function adD(d, n) { const dt = new Date(d + 'T12:00:00'); dt.setDate(dt.getDate() + n); return dt.toISOString().split('T')[0]; }
+    function adD(d, n) { if (!d || typeof d !== 'string' || d.length < 8) return null; try { const dt = new Date(d + 'T12:00:00'); if (isNaN(dt.getTime())) return null; dt.setDate(dt.getDate() + n); return dt.toISOString().split('T')[0]; } catch(e) { return null; } }
     function diasR(l) { if (!l) return null; return Math.ceil((new Date(l + 'T12:00:00') - new Date()) / 86400000); }
     function priP(p) { if (!p.limite) return 3; const d = diasR(p.limite); if (d <= 0) return 0; if (d <= 3) return 1; if (d <= 7) return 2; return 3; }
     function colabs() { return S.users.filter(function(u) { return u.role === 'colaboradora' || u.role === 'gestora_desocupacao'; }); }
@@ -1031,13 +1031,15 @@
       const finalizado = dist.filter(function(p) { return p.statusAcerto === 'Finalizado'; }).length;
       const totalAtivos = encerrar + pendente + emAndamento;
       const finMes = S.fins.filter(function(f) { if (!f.data) return false; const d = new Date(f.data + 'T12:00:00'); return d.getMonth() === mesAtual && d.getFullYear() === anoAtual; }).length;
-      const alertaPrazo = dist.filter(function(p) { if (p.statusAcerto === 'Finalizado' || !p.enc) return false; const prazoDias = (p.modal === 'CredAluga' || p.modal === 'Loft' || p.modal === 'Seguro Fianca') ? 30 : 45; const dias = diasR(adD(p.enc, prazoDias)); return dias !== null && dias <= 10; })
+      const alertaPrazo = dist.filter(function(p) { if (p.statusAcerto === 'Finalizado' || !p.enc || p.enc.length < 8) return false; const prazoDias = (p.modal === 'CredAluga' || p.modal === 'Loft' || p.modal === 'Seguro Fianca') ? 30 : 45; try { const dias = diasR(adD(p.enc, prazoDias)); return dias !== null && dias <= 10; } catch(e) { return false; } })
         .sort(function(a, b) {
           const pA = (a.modal === 'CredAluga' || a.modal === 'Loft' || a.modal === 'Seguro Fianca') ? 30 : 45;
           const pB = (b.modal === 'CredAluga' || b.modal === 'Loft' || b.modal === 'Seguro Fianca') ? 30 : 45;
-          return diasR(adD(a.enc, pA)) - diasR(adD(b.enc, pB));
+          const dA = adD(a.enc, pA); const dB = adD(b.enc, pB);
+          if (!dA) return 1; if (!dB) return -1;
+          return diasR(dA) - diasR(dB);
         });
-      const alertaVencidos = alertaPrazo.filter(function(p) { const prazoDias = (p.modal === 'CredAluga' || p.modal === 'Loft' || p.modal === 'Seguro Fianca') ? 30 : 45; return diasR(adD(p.enc, prazoDias)) < 0; });
+      const alertaVencidos = alertaPrazo.filter(function(p) { const prazoDias = (p.modal === 'CredAluga' || p.modal === 'Loft' || p.modal === 'Seguro Fianca') ? 30 : 45; const d = adD(p.enc, prazoDias); return d && diasR(d) < 0; });
       const comTempo = S.fins.filter(function(f) { return f.dataPendente && f.data; });
       let tempoMedio = 0;
       if (comTempo.length > 0) { const total = comTempo.reduce(function(acc, f) { const d = Math.ceil((new Date(f.data + 'T12:00:00') - new Date(f.dataPendente + 'T12:00:00')) / 86400000); return acc + (isNaN(d) ? 0 : d); }, 0); tempoMedio = Math.round(total / comTempo.length); }
