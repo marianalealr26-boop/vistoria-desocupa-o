@@ -1330,6 +1330,7 @@
       }; 
       if (S.AGRET) { 
         S.AGRET.status = 'Realizada'; 
+        dbSaveAg(S.AGRET); // salva no banco
         novo.obs = (novo.obs ? novo.obs + ' | ' : '') + 'Reagendamento vinculado'; 
       } 
       S.ags.push(novo); 
