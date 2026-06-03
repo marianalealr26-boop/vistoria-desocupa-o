@@ -1273,7 +1273,22 @@
       if (!modal) { showToast('Selecione a modalidade da fiança', 'danger'); return; }
       if (!tp) { showToast('Selecione o tipo', 'danger'); return; }
       const obs = (document.getElementById('ag-ob')||{value:''}).value.trim();
-      if (!obs) { showToast('Informe as observações', 'danger'); return; } 
+      if (!obs) { showToast('Informe as observações', 'danger'); return; }
+      // Bloqueia se contrato já está na fila do vistoriador ou para reagendar
+      const naFila = S.ags.filter(function(a) {
+        return String(a.contrato) === String(co) && (a.status === 'Aguardando' || a.status === 'Atribuido');
+      });
+      const paraReag = S.ags.filter(function(a) {
+        return String(a.contrato) === String(co) && a.status === 'Aguardando retorno';
+      });
+      if (naFila.length > 0) {
+        showToast('Este contrato já está na fila do Vistoriador! Verifique antes de criar um novo agendamento.', 'danger');
+        return;
+      }
+      if (paraReag.length > 0) {
+        showToast('Este contrato está aguardando reagendamento! Use o botão "Reagendar" em vez de criar novo.', 'danger');
+        return;
+      } 
       const isAcompanhada = tp === 'acompanhada';
       const acompValue = isAcompanhada ? document.getElementById('ag-ac').value : '';
       const needsSchedule = isAcompanhada && acompValue !== 'Proprietario';
@@ -2898,7 +2913,8 @@
         S_RET = rows.map(function(r) { return {
           id: r.id, contrato: r.contrato, end: r.end_imovel, modal: r.modal,
           tipo: r.tipo, obs: r.obs, status: r.status || 'Pendente',
-          cadastradoPor: r.cadastrado_por || '', data: r.created_at ? r.created_at.split('T')[0] : ''
+          cadastradoPor: r.cadastrado_por || '', data: r.created_at ? r.created_at.split('T')[0] : '',
+          resolvidoPor: r.resolvido_por || '', resolvidoEm: r.resolvido_em || ''
         }; });
       } catch(e) { S_RET = []; }
     }
@@ -2968,9 +2984,19 @@
       // Lista resolvidos
       (resolvidos.length ? '<div class="card animate-in">' +
         '<div style="padding:12px 20px;border-bottom:1px solid var(--border)"><h3 style="font-size:12px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase">Resolvidos (' + resolvidos.length + ')</h3></div>' +
-        '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereço</th><th>Modalidade</th><th>Tipo</th><th>O que foi alterado</th><th>Data</th></tr></thead><tbody>' +
+        '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereço</th><th>Modalidade</th><th>Tipo</th><th>O que foi alterado</th><th>Data</th><th>Resolvido por</th></tr></thead><tbody>' +
         resolvidos.map(function(r) {
-          return '<tr style="opacity:0.7"><td><span class="badge badge-primary">' + r.contrato + '</span></td><td style="font-weight:600">' + r.end + '</td><td><span class="badge badge-neutral">' + (r.modal||'-') + '</span></td><td><span class="badge badge-success">' + r.tipo + ' ✓</span></td><td style="font-size:12px">' + (r.obs||'—') + '</td><td>' + fmtData(r.data) + '</td></tr>';
+          let resolvidoInfo = '—';
+          if (r.resolvidoPor) {
+            resolvidoInfo = r.resolvidoPor;
+            if (r.resolvidoEm) {
+              const d = new Date(r.resolvidoEm);
+              const data = d.toLocaleDateString('pt-BR');
+              const hora = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+              resolvidoInfo += '<div style="font-size:10px;color:var(--fg-subtle)">' + data + ' às ' + hora + '</div>';
+            }
+          }
+          return '<tr style="opacity:0.7"><td><span class="badge badge-primary">' + r.contrato + '</span></td><td style="font-weight:600">' + r.end + '</td><td><span class="badge badge-neutral">' + (r.modal||'-') + '</span></td><td><span class="badge badge-success">' + r.tipo + ' ✓</span></td><td style="font-size:12px">' + (r.obs||'—') + '</td><td>' + fmtData(r.data) + '</td><td style="font-size:12px">' + resolvidoInfo + '</td></tr>';
         }).join('') +
         '</tbody></table></div></div>' : '') +
 
@@ -3000,9 +3026,12 @@
 
     async function resolverRetificacao(id) {
       try {
+        const agora = new Date();
+        const resolvidoPor = S.user ? S.user.nome : '—';
+        const resolvidoEm = agora.toISOString();
         await fetch(SB_URL + '/rest/v1/retificacoes?id=eq.' + id, {
           method: 'PATCH', headers: { ...SB_HDR, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'Resolvido' })
+          body: JSON.stringify({ status: 'Resolvido', resolvido_por: resolvidoPor, resolvido_em: resolvidoEm })
         });
         showToast('Marcado como resolvido!', 'success');
         rRetificar(document.getElementById('CNT'), document.getElementById('SB'));
