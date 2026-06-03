@@ -1230,7 +1230,12 @@
       const telEl = document.getElementById('ag-tel'); if (telEl) telEl.value = a.telefone || '';
       const colEl = document.getElementById('ag-col'); if (colEl && a.colab) colEl.value = a.colab;
       const modEl = document.getElementById('ag-modal'); if (modEl && a.modal) modEl.value = a.modal;
-      document.getElementById('ag-ob').value = a.obs || 'Retorno apos reparos'; 
+      document.getElementById('ag-ob').value = a.obs || 'Retorno apos reparos';
+      // Esconde o aviso de duplicado pois é um reagendamento intencional
+      const aviso = document.getElementById('ag-c-aviso');
+      if (aviso) aviso.style.display = 'none';
+      // Marca como reagendamento para não bloquear no salvar
+      S.AGRET_ID = id;
       showToast('Selecione novo dia e horario', 'warning'); 
     }
 
@@ -1275,20 +1280,24 @@
       const obs = (document.getElementById('ag-ob')||{value:''}).value.trim();
       if (!obs) { showToast('Informe as observações', 'danger'); return; }
       // Bloqueia se contrato já está na fila do vistoriador ou para reagendar
-      const naFila = S.ags.filter(function(a) {
-        return String(a.contrato) === String(co) && (a.status === 'Aguardando' || a.status === 'Atribuido');
-      });
-      const paraReag = S.ags.filter(function(a) {
-        return String(a.contrato) === String(co) && a.status === 'Aguardando retorno';
-      });
-      if (naFila.length > 0) {
-        showToast('Este contrato já está na fila do Vistoriador! Verifique antes de criar um novo agendamento.', 'danger');
-        return;
+      // Exceto se for reagendamento intencional via selRet
+      if (!S.AGRET_ID) {
+        const naFila = S.ags.filter(function(a) {
+          return String(a.contrato) === String(co) && (a.status === 'Aguardando' || a.status === 'Atribuido');
+        });
+        const paraReag = S.ags.filter(function(a) {
+          return String(a.contrato) === String(co) && a.status === 'Aguardando retorno';
+        });
+        if (naFila.length > 0) {
+          showToast('Este contrato já está na fila do Vistoriador! Verifique antes de criar um novo agendamento.', 'danger');
+          return;
+        }
+        if (paraReag.length > 0) {
+          showToast('Este contrato está aguardando reagendamento! Use o botão "Reagendar" em vez de criar novo.', 'danger');
+          return;
+        }
       }
-      if (paraReag.length > 0) {
-        showToast('Este contrato está aguardando reagendamento! Use o botão "Reagendar" em vez de criar novo.', 'danger');
-        return;
-      } 
+      S.AGRET_ID = null;
       const isAcompanhada = tp === 'acompanhada';
       const acompValue = isAcompanhada ? document.getElementById('ag-ac').value : '';
       const needsSchedule = isAcompanhada && acompValue !== 'Proprietario';
