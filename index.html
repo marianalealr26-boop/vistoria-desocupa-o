@@ -2068,6 +2068,8 @@
       const cnt = document.getElementById('dist-count');
       if (cnt) cnt.textContent = vis + ' contrato' + (vis !== 1 ? 's' : '');
     }
+
+    function upDistColab(id, novaColab) {
       const p = S.prots.find(function(x) { return x.id == id; });
       if (!p || !novaColab) return;
       const anterior = p.colabDist;
