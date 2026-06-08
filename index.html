@@ -1520,6 +1520,8 @@
       showToast('Contrato devolvido ao Vistoriador!', 'success');
       rProt(document.getElementById('CNT'), document.getElementById('SB'));
     }
+
+    function aPk(agId) {
       const ag = S.ags.find(function(a) { return a.id == agId; });
       if (!ag) return;
       S.pkEdit = agId;
