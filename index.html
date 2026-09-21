@@ -103,15 +103,88 @@
     .login-card { width: 100%; max-width: 420px; background: rgba(255, 255, 255, 0.98); border-radius: 24px; padding: 40px; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35); position: relative; z-index: 1; backdrop-filter: blur(20px); }
 
     /* Navigation */
-    .top-nav { background: var(--bg-card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-    .nav-item { display: flex; align-items: center; padding: 12px 16px; font-size: 13px; font-weight: 500; color: var(--fg-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s ease; white-space: nowrap; position: relative; }
-    .nav-item:hover { color: var(--fg); background: var(--bg); }
-    .nav-item.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-    .nav-badge { position: absolute; top: 6px; right: 6px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--danger); color: white; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
+    .top-/* SIDEBAR NAVIGATION */
+    nav { display: none; }
+    .nav-item { display: none; }
 
-    /* Layout */
-    .main-wrapper { display: flex; min-height: calc(100vh - 64px); }
-    .content-area { flex: 1; padding: 24px; min-width: 0; }
+    .sidebar-nav {
+      width: 240px; min-width: 240px;
+      background: #0F172A;
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; height: 100vh;
+      z-index: 200; overflow-y: auto;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+    }
+    .sidebar-logo .logo-icon {
+      width: 32px; height: 32px; min-width: 32px;
+      background: linear-gradient(135deg, #2563EB, #3B82F6);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    }
+    .sidebar-logo .logo-text { font-size: 14px; font-weight: 700; color: white; }
+    .sidebar-logo .logo-sub { font-size: 10px; color: rgba(255,255,255,0.4); }
+    .sidebar-user {
+      padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-user .user-avatar {
+      width: 32px; height: 32px; min-width: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, #2563EB, #7C3AED);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: white;
+    }
+    .sidebar-user .user-name { font-size: 12px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-user .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+    .sidebar-group { margin: 2px 0; }
+    .sidebar-group-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; cursor: pointer;
+      color: rgba(255,255,255,0.45);
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      user-select: none; transition: color 0.15s;
+    }
+    .sidebar-group-header:hover { color: rgba(255,255,255,0.8); }
+    .sidebar-group-header .chevron { margin-left: auto; transition: transform 0.2s; }
+    .sidebar-group-header.open .chevron { transform: rotate(90deg); }
+    .sidebar-group-header.open { color: rgba(255,255,255,0.7); }
+    .sidebar-group-items.closed { display: none; }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px 8px 38px;
+      cursor: pointer; color: rgba(255,255,255,0.5);
+      font-size: 12px; font-weight: 500;
+      transition: all 0.15s; position: relative; white-space: nowrap;
+    }
+    .sidebar-item:hover { color: white; background: rgba(255,255,255,0.06); }
+    .sidebar-item.active { color: white; background: rgba(37,99,235,0.3); font-weight: 600; }
+    .sidebar-item.active::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: #3B82F6; border-radius: 0 2px 2px 0;
+    }
+    .sidebar-item .item-badge {
+      margin-left: auto; background: #DC2626; color: white;
+      font-size: 9px; font-weight: 700; padding: 1px 5px;
+      border-radius: 10px; min-width: 16px; text-align: center;
+    }
+    .sidebar-item .item-badge.warn { background: #D97706; }
+    .sidebar-bottom {
+      margin-top: auto; padding: 12px 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-logout {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; cursor: pointer;
+      color: rgba(255,255,255,0.4); font-size: 12px;
+      border-radius: 8px; transition: all 0.15s;
+    }
+    .sidebar-logout:hover { color: #FCA5A5; background: rgba(220,38,38,0.12); }
+    .nav-badge { display: none; }
+
+    main-wrapper { display: flex; }
+    .main-wrapper { display: flex; min-height: 100vh; margin-left: 240px; }
+    .content-area { flex: 1; padding: 24px; min-width: 0; overflow-y: auto; }
     .sidebar { width: 280px; padding: 24px; border-left: 1px solid var(--border); background: var(--bg-card); flex-shrink: 0; display: none; }
     .sidebar.visible { display: block; }
 
@@ -284,24 +357,35 @@
       </div>
     </div>
     <div id="MAIN" style="display: none;">
-      <nav class="top-nav">
-        <div style="display: flex; align-items: center; padding: 0 24px;">
-          <div style="display: flex; align-items: center; gap: 10px; padding-right: 20px; border-right: 1px solid var(--border); margin-right: 16px;">
-            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #2563EB, #3B82F6); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            </div>
-            <span style="font-size: 15px; font-weight: 700; color: var(--fg);">Casa Nova</span>
+      <div class="sidebar-nav" id="SIDEBAR">
+        <!-- Logo -->
+        <div class="sidebar-logo">
+          <div class="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           </div>
-          <div id="NAV" style="display: flex; flex: 1; overflow-x: auto;"></div>
-          <div style="display: flex; align-items: center; gap: 12px; padding-left: 16px; border-left: 1px solid var(--border); margin-left: 8px;">
-            <div style="text-align: right;">
-              <div id="UN" style="font-size: 13px; font-weight: 600; color: var(--fg);"></div>
-              <div id="UR" style="font-size: 11px; color: var(--fg-subtle);"></div>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="doLogout()">Sair</button>
+          <div>
+            <div class="logo-text">Casa Nova</div>
+            <div class="logo-sub">Imobiliária</div>
           </div>
         </div>
-      </nav>
+        <!-- User -->
+        <div class="sidebar-user">
+          <div class="user-avatar" id="SB_AVT"></div>
+          <div class="user-info">
+            <div class="user-name" id="UN"></div>
+            <div class="user-role" id="UR"></div>
+          </div>
+        </div>
+        <!-- Nav groups -->
+        <div id="NAV"></div>
+        <!-- Bottom -->
+        <div class="sidebar-bottom">
+          <div class="sidebar-logout" onclick="doLogout()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sair
+          </div>
+        </div>
+      </div>
       <div class="toast-container" id="TOASTS"></div>
       <div class="main-wrapper">
         <div class="content-area" id="CNT"></div>
@@ -364,7 +448,7 @@
       const log = { id: Date.now(), contrato: String(contrato), usuario: S.user ? S.user.nome : 'Sistema', acao: acao, detalhe: detalhe || '', data: now.toISOString().split('T')[0], hora: hora, ts: now.getTime() };
       S.logs.push(log);
       if (S.logs.length > 500) S.logs = S.logs.slice(-500);
-      dbSaveLog(log);
+      dbSaveLog(log).catch(function(e) { console.warn('addLog falhou:', e); });
     }
     function fmtData(s) { return s ? s.split('-').reverse().join('/') : '-'; }
     
@@ -466,7 +550,7 @@
         headers: Object.assign({}, SB_HDR, {'Prefer': 'resolution=merge-duplicates,return=minimal'}),
         body: JSON.stringify(Array.isArray(dados) ? dados : [dados])
       });
-      if (!r.ok) console.error('sbUpsert error', tabela, await r.text());
+      if (!r.ok) { const _msg = await r.text(); console.error('sbUpsert error', tabela, _msg); throw new Error('sbUpsert ' + tabela + ': ' + _msg); }
     }
     async function sbDelete(tabela, campo, valor) {
       const r = await fetch(SB_URL + '/rest/v1/' + tabela + '?' + campo + '=eq.' + valor, { method: 'DELETE', headers: SB_HDR });
@@ -526,7 +610,16 @@
     async function dbSaveAg(a) { await sbUpsert('agendamentos', agToRow(a)); }
     async function dbSaveProt(p) { await sbUpsert('protocolos', protToRow(p)); }
     async function dbSaveFin(f) { await sbUpsert('finalizados', finToRow(f)); }
-    async function dbSaveLog(l) { await sbUpsert('logs', logToRow(l)); }
+    async function dbSaveLog(l) { 
+      try {
+        const r = await fetch(SB_URL + '/rest/v1/logs', {
+          method: 'POST',
+          headers: Object.assign({}, SB_HDR, {'Prefer': 'return=minimal'}),
+          body: JSON.stringify([logToRow(l)])
+        });
+        if (!r.ok) console.error('dbSaveLog error', await r.text());
+      } catch(e) { console.error('dbSaveLog failed', e); }
+    }
     async function dbSaveUser(u) { await sbUpsert('usuarios', userToRow(u)); }
     async function dbDeleteUser(id) { await sbDelete('usuarios', 'id', id); }
     async function dbSaveGrade(data, hora, val) {
@@ -558,25 +651,29 @@
     // ── BADGES DE ALERTA NA NAV ───────────────────────────────────────────────
     function updateNavBadges() {
       const ret = S.ags.filter(function(a) { return a.status === 'Aguardando retorno'; }).length;
-      const reparos = S.prots.filter(function(p) { return p.statusVist === 'Reparos pendentes' && p.statusOrc !== 'Finalizado'; }).length;
       const laudos = getLaudosPendentes().length;
+      const agPend = S.ags.filter(function(a) { return a.status === 'Aguardando' || a.status === 'Atribuido'; }).length;
 
-      ['ag', 'd1', 'laud'].forEach(function(tab) {
-        const el = document.getElementById('nt-' + tab);
-        if (!el) return;
-        const existing = el.querySelector('.nav-badge');
+      // Update sidebar item badges
+      document.querySelectorAll('.sidebar-item').forEach(function(el) {
+        const existing = el.querySelector('.item-badge');
         if (existing) existing.remove();
-        let count = 0;
-        if (tab === 'ag' && ret > 0) count = ret;
-        if (tab === 'd1' && reparos > 0) count = reparos;
-        if (tab === 'laud' && laudos > 0) count = laudos;
-        if (count > 0) {
-          const b = document.createElement('span');
-          b.className = 'nav-badge';
-          b.textContent = count;
-          el.appendChild(b);
-        }
       });
+
+      // Add badges to relevant sidebar items
+      const addBadge = function(tabId, count, warn) {
+        document.querySelectorAll('.sidebar-item').forEach(function(el) {
+          if (el.id && el.id.endsWith('-' + tabId) && count > 0) {
+            const b = document.createElement('span');
+            b.className = 'item-badge' + (warn ? ' warn' : '');
+            b.textContent = count;
+            el.appendChild(b);
+          }
+        });
+      };
+
+      if (ret > 0) addBadge('ag', ret, true);
+      if (laudos > 0) addBadge('laud', laudos, false);
     }
     
     function doLogin() {
@@ -585,9 +682,20 @@
       if (!f) { document.getElementById('lerr').style.display = 'block'; return; }
       document.getElementById('lerr').style.display = 'none';
       S.user = f;
-      // Salva sessão no navegador
-      try { localStorage.setItem('cnSession', JSON.stringify({ login: f.login, senha: f.senha })); } catch(e) {}
-      iniciarSessao(f);
+      localStorage.setItem('cnSession', JSON.stringify({ id: f.id, login: f.login }));
+      document.getElementById('LOGIN').style.display = 'none';
+      document.getElementById('MAIN').style.display = 'flex';
+      document.getElementById('UN').textContent = f.nome;
+      document.getElementById('UR').textContent = f.role === 'admin' ? 'Administrador' : f.role === 'gestor_vistoria' ? 'Gestor Vistoria' : f.role === 'gestora_desocupacao' ? 'Gestora Desocupação' : f.role === 'gestor_operacional' ? 'Ger. Operações' : f.role === 'vistoriador' ? 'Vistoriador' : f.role === 'seguro_fianca' ? 'Seguro Fiança' : 'Colaboradora';
+      loadAll().then(function() {
+        buildNav();
+        // Open first tab of first group
+        const groups = getSidebarGroups();
+        if (groups.length && groups[0].items.length) {
+          _sidebarOpenGroups[groups[0].id] = true;
+          goTab(groups[0].items[0][0]);
+        }
+      });
     }
 
     function iniciarSessao(f) {
@@ -604,13 +712,12 @@
       else if (f.role === 'seguro_fianca') roleName = 'Seguro Fianca';
       document.getElementById('UR').textContent = roleName;
       buildNav();
-      if (f.role === 'admin') goTab('d1');
-      else if (f.role === 'gestor_vistoria') goTab('d1');
-      else if (f.role === 'gestora_desocupacao') goTab('d2');
-      else if (f.role === 'gestor_operacional') goTab('d1');
-      else if (f.role === 'vistoriador') goTab('vist');
-      else if (f.role === 'seguro_fianca') goTab('fianca');
-      else goTab('meus');
+      // Open first tab of first group
+      const groups = getSidebarGroups();
+      if (groups.length && groups[0].items.length) {
+        _sidebarOpenGroups[groups[0].id] = true;
+        goTab(groups[0].items[0][0]);
+      }
       iniciarAutoRefresh();
     }
 
@@ -667,36 +774,134 @@
       document.getElementById('MAIN').style.display = 'none';
     }
     
-    const TABS_GESTOR_VIST = [['d1', 'Dashboard'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['ret', '🔄 Retificar'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico']];
-    const TABS_GESTORA_DESOC = [['d2', 'Desocupacao'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca']];
-    const TABS_GESTOR_OP = [['d1', 'Dashboard Vistoria'], ['d2', 'Dashboard Desocupacao'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['ret', '🔄 Retificar'], ['equipe', 'Contratos Equipe'], ['desoc', '📋 Desocupacoes']];
-    const TABS_ADM = [['d1', 'Dashboard'], ['d2', 'Desocupacao'], ['hor', 'Horarios'], ['ag', 'Agendamento'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['ret', '🔄 Retificar'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca'], ['adm', 'Admin']];
-    const TABS_COL = [['meus', 'Meus Contratos'], ['tarefas', '✓ Tarefas'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['fin', 'Finalizados'], ['desoc', '📋 Desocupacoes'], ['busca', '🔍 Busca']];
-    const TABS_VIS = [['vist', 'Vistoriador'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['desoc', '📋 Desocupacoes']];
-    const TABS_FIANCA = [['fianca', 'Contratos Fianca'], ['ret', '🔄 Retificar'], ['desoc', '📋 Desocupacoes']];
-    const PFN = { d1: rD1, d2: rD2, hor: rHor, ag: rAg, vist: rVist, prot: rProt, laud: rLaud, orc: rOrc, dist: rDist, fin: rFin, adm: rAdm, meus: rMeus, busca: rBusca, hist: rHist, fianca: rFianca, rel: rRelatorio, tarefas: rTarefas, equipe: rEquipe, desoc: rDesoc, ret: rRetificar };
+    const TABS_GESTOR_VIST = [['d1', 'Dashboard'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['ret', '🔄 Retificar'], ['busca', '🔍 Busca'], ['hist', 'Historico']];
+    const TABS_GESTORA_DESOC = [['d2', 'Desocupacao'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca']];
+    const TABS_GESTOR_OP = [['d1', 'Dashboard Vistoria'], ['d2', 'Dashboard Desocupacao'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['ret', '🔄 Retificar'], ['equipe', 'Contratos Equipe']];
+    const TABS_ADM = [['d1', 'Dashboard'], ['d2', 'Desocupacao'], ['hor', 'Horarios'], ['ag', 'Agendamento'], ['vist', 'Vistoriador'], ['prot', 'Protocolo'], ['laud', 'Laudos'], ['orc', 'Orcamentos'], ['ret', '🔄 Retificar'], ['dist', 'Distribuicao'], ['equipe', 'Contratos Equipe'], ['fin', 'Finalizados'], ['rel', '📊 Relatorio'], ['busca', '🔍 Busca'], ['hist', 'Historico'], ['fianca', 'Seguro Fianca'], ['adm', 'Admin']];
+    const TABS_COL = [['meus', 'Meus Contratos'], ['tarefas', '✓ Tarefas'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['fin', 'Finalizados'], ['busca', '🔍 Busca']];
+    const TABS_VIS = [['vist', 'Vistoriador'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['prot', 'Protocolo'], ['laud', 'Laudos']];
+    const TABS_FIANCA = [['fianca', 'Contratos Fianca'], ['ret', '🔄 Retificar']];
+    const PFN = { d1: rD1, d2: rD2, hor: rHor, ag: rAg, vist: rVist, prot: rProt, laud: rLaud, orc: rOrc, dist: rDist, fin: rFin, adm: rAdm, meus: rMeus, busca: rBusca, hist: rHist, fianca: rFianca, rel: rRelatorio, tarefas: rTarefas, equipe: rEquipe, ret: rRetificar };
     
-    function buildNav() { 
-      const nav = document.getElementById('NAV'); 
-      nav.innerHTML = ''; 
-      let tabs;
-      if (S.user.role === 'admin') tabs = TABS_ADM;
-      else if (S.user.role === 'gestor_vistoria') tabs = TABS_GESTOR_VIST;
-      else if (S.user.role === 'gestora_desocupacao') tabs = TABS_GESTORA_DESOC;
-      else if (S.user.role === 'gestor_operacional') tabs = TABS_GESTOR_OP;
-      else if (S.user.role === 'vistoriador') tabs = TABS_VIS;
-      else if (S.user.role === 'seguro_fianca') tabs = TABS_FIANCA;
-      else tabs = TABS_COL;
-      tabs.forEach(function(t) { const el = document.createElement('div'); el.className = 'nav-item'; el.textContent = t[1]; el.id = 'nt-' + t[0]; el.onclick = function() { goTab(t[0]); }; nav.appendChild(el); }); 
+    // Grupos do menu lateral por perfil
+    function getSidebarGroups() {
+      const role = S.user.role;
+      const isAdmin = role === 'admin';
+      const isGestVist = role === 'gestor_vistoria';
+      const isGestDesoc = role === 'gestora_desocupacao';
+      const isGestOp = role === 'gestor_operacional';
+      const isVist = role === 'vistoriador';
+      const isFianca = role === 'seguro_fianca';
+      const isColab = role === 'colaboradora';
+
+      const groups = [];
+
+      // DESOCUPAÇÃO
+      const desocItems = [];
+      if (isAdmin || isGestDesoc || isGestOp) desocItems.push(['d2', 'Dashboard']);
+      if (isAdmin || isGestDesoc || isColab) desocItems.push(['ag', 'Agendamento']);
+      if (isAdmin || isGestDesoc || isColab) desocItems.push(['hor', 'Horários']);
+      if (isAdmin || isGestDesoc) desocItems.push(['dist', 'Distribuição']);
+      if (isAdmin || isGestDesoc || isGestOp) desocItems.push(['equipe', 'Contratos Equipe']);
+      if (isAdmin || isGestDesoc) desocItems.push(['rel', 'Relatório']);
+      if (isAdmin || isColab) desocItems.push(['meus', 'Meus Contratos']);
+      if (isColab) desocItems.push(['tarefas', '✓ Tarefas']);
+      if (isAdmin || isGestDesoc || isColab) desocItems.push(['fin', 'Finalizados']);
+      if (isAdmin || isGestDesoc || isColab) desocItems.push(['busca', 'Busca']);
+      if (isAdmin || isGestDesoc || isColab) desocItems.push(['hist', 'Histórico']);
+      if (desocItems.length) groups.push({ id: 'g-desoc', label: 'Desocupação', icon: '🏠', items: desocItems });
+
+      // VISTORIA
+      const vistItems = [];
+      if (isAdmin || isGestVist || isGestOp) vistItems.push(['d1', 'Dashboard']);
+      if (isAdmin || isGestVist || isVist) vistItems.push(['ag', 'Agendamento']);
+      if (isAdmin || isGestVist || isVist) vistItems.push(['hor', 'Horários']);
+      if (isAdmin || isGestVist || isGestOp || isVist) vistItems.push(['vist', 'Vistoriador']);
+      if (isAdmin || isGestVist || isGestOp || isVist) vistItems.push(['prot', 'Protocolo']);
+      if (isAdmin || isGestVist || isGestOp) vistItems.push(['laud', 'Laudos']);
+      if (isAdmin || isGestVist || isGestOp) vistItems.push(['orc', 'Orçamentos']);
+      if (isAdmin || isGestVist || isGestOp || isVist) vistItems.push(['ret', '🔄 Retificar']);
+      if (isAdmin || isGestVist || isVist) vistItems.push(['hist', 'Histórico']);
+      if (vistItems.length) groups.push({ id: 'g-vist', label: 'Vistoria', icon: '🔍', items: vistItems });
+
+      // SEGURO FIANÇA
+      if (isAdmin || isFianca) {
+        const fiancaItems = [];
+        fiancaItems.push(['fianca', 'Contratos Fiança']);
+        fiancaItems.push(['ret', '🔄 Retificar']);
+        groups.push({ id: 'g-fianca', label: 'Seguro Fiança', icon: '🛡️', items: fiancaItems });
+      }
+
+      // ADMIN
+      if (isAdmin) {
+        groups.push({ id: 'g-admin', label: 'Admin', icon: '⚙️', items: [['adm', 'Administração']] });
+      }
+
+      return groups;
+    }
+
+    var _sidebarOpenGroups = {};
+    var _currentTab = null;
+
+    function buildNav() {
+      const nav = document.getElementById('NAV');
+      nav.innerHTML = '';
+      const groups = getSidebarGroups();
+
+      // Avatar initials
+      const avt = document.getElementById('SB_AVT');
+      if (avt && S.user) {
+        const parts = S.user.nome.split(' ');
+        avt.textContent = parts.length > 1 ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase() : S.user.nome.substring(0,2).toUpperCase();
+      }
+
+      groups.forEach(function(g) {
+        // Default: open first group
+        if (_sidebarOpenGroups[g.id] === undefined) _sidebarOpenGroups[g.id] = groups.indexOf(g) === 0;
+        const isOpen = _sidebarOpenGroups[g.id];
+
+        const groupEl = document.createElement('div');
+        groupEl.className = 'sidebar-group';
+        groupEl.id = g.id;
+
+        const header = document.createElement('div');
+        header.className = 'sidebar-group-header' + (isOpen ? ' open' : '');
+        header.innerHTML = '<span class="group-icon">' + g.icon + '</span><span>' + g.label + '</span><span class="chevron">›</span>';
+        header.onclick = function() {
+          _sidebarOpenGroups[g.id] = !_sidebarOpenGroups[g.id];
+          buildNav();
+        };
+
+        const items = document.createElement('div');
+        items.className = 'sidebar-group-items' + (isOpen ? '' : ' closed');
+
+        g.items.forEach(function(t) {
+          const item = document.createElement('div');
+          item.className = 'sidebar-item' + (_currentTab === t[0] ? ' active' : '');
+          item.id = 'nt-' + g.id + '-' + t[0];
+          item.textContent = t[1];
+          item.onclick = function() { goTab(t[0]); };
+          items.appendChild(item);
+        });
+
+        groupEl.appendChild(header);
+        groupEl.appendChild(items);
+        nav.appendChild(groupEl);
+      });
+
       updateNavBadges();
     }
-    function goTab(id) { 
-      document.querySelectorAll('.nav-item').forEach(function(e) { e.classList.remove('active'); }); 
-      const el = document.getElementById('nt-' + id); 
-      if (el) el.classList.add('active'); 
-      const c = document.getElementById('CNT'), sb = document.getElementById('SB'); 
-      c.innerHTML = ''; sb.innerHTML = ''; 
-      if (PFN[id]) PFN[id](c, sb); 
+
+    function goTab(id) {
+      _currentTab = id;
+      // Update active state
+      document.querySelectorAll('.sidebar-item').forEach(function(e) { e.classList.remove('active'); });
+      document.querySelectorAll('.sidebar-item').forEach(function(e) {
+        if (e.id && e.id.endsWith('-' + id)) e.classList.add('active');
+      });
+      const c = document.getElementById('CNT'), sb = document.getElementById('SB');
+      c.innerHTML = ''; sb.innerHTML = '';
+      if (PFN[id]) PFN[id](c, sb);
       updateNavBadges();
     }
     function sBar(a) { const ss = [['1', 'Agendamento'], ['2', 'Vistoriador'], ['3', 'Protocolo'], ['4', 'Orcamentos'], ['5', 'Distribuicao'], ['6', 'Finalizado']]; return '<div class="step-indicator">' + ss.map(function(s, i) { return '<div class="step-item ' + (i < a ? 'completed' : i === a ? 'active' : '') + '"><div class="step-number">' + (i < a ? '✓' : s[0]) + '</div><span>' + s[1] + '</span></div>' + (i < 5 ? '<span class="step-arrow">→</span>' : ''); }).join('') + '</div>'; }
@@ -820,16 +1025,38 @@
       // Laudos pendentes
       const laudosPend = getLaudosPendentes();
       
+      // Vistorias realizadas hoje por vistoriador
+      const hoje = new Date().toISOString().split('T')[0];
+      const vistHoje = {};
+      S.ags.filter(function(a) { return (a.status === 'Concluido' || a.status === 'Realizada') && (a.dataCad || '').startsWith(hoje); }).forEach(function(a) {
+        const v = a.vistoriador || 'Sem vistoriador';
+        vistHoje[v] = (vistHoje[v] || 0) + 1;
+      });
+      const totalHoje = Object.values(vistHoje).reduce(function(s, n) { return s + n; }, 0);
+
       c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Dashboard Vistoria</h1><p class="section-subtitle">Visao geral do processo de vistoria</p></div></div>' +
-      
-      // Métricas topo
-      '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px">' +
+
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">' +
         '<div class="stat-card animate-in stagger-1"><div class="stat-icon stat-icon-amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-content"><div class="stat-value">' + pend + '</div><div class="stat-label">Aguardando</div></div></div>' +
         '<div class="stat-card animate-in stagger-2"><div class="stat-icon stat-icon-blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-content"><div class="stat-value">' + atrib + '</div><div class="stat-label">Atribuido</div></div></div>' +
-        '<div class="stat-card animate-in stagger-3"><div class="stat-icon stat-icon-green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="stat-content"><div class="stat-value">' + conc + '</div><div class="stat-label">Concluido</div></div></div>' +
-        '<div class="stat-card animate-in stagger-4" style="border:2px solid var(--danger)"><div class="stat-icon stat-icon-red"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div><div class="stat-content"><div class="stat-value" style="color:var(--danger)">' + ret + '</div><div class="stat-label">Reagendar</div></div></div>' +
-        '<div class="stat-card animate-in stagger-5" style="border:2px solid var(--warning)"><div class="stat-icon stat-icon-amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="stat-content"><div class="stat-value" style="color:var(--warning)">' + reparos + '</div><div class="stat-label">Rep. Pendentes</div></div></div>' +
+        '<div class="stat-card animate-in stagger-3" style="border:2px solid var(--danger)"><div class="stat-icon stat-icon-red"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div><div class="stat-content"><div class="stat-value" style="color:var(--danger)">' + ret + '</div><div class="stat-label">Reagendar</div></div></div>' +
+        '<div class="stat-card animate-in stagger-4"><div class="stat-icon stat-icon-green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="stat-content"><div class="stat-value">' + totalHoje + '</div><div class="stat-label">Vistorias hoje</div></div></div>' +
       '</div>' +
+
+      // Painel vistorias do dia por vistoriador
+      (totalHoje > 0 ? '<div class="card animate-in" style="margin-bottom:20px">' +
+        '<div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">' +
+          '<h3 style="font-size:13px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase">Vistorias Realizadas Hoje</h3>' +
+          '<span class="badge badge-success">' + totalHoje + ' no total</span>' +
+        '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:12px;padding:16px 20px">' +
+        Object.entries(vistHoje).sort(function(a,b) { return b[1]-a[1]; }).map(function(entry) {
+          return '<div style="display:flex;align-items:center;gap:8px;background:var(--bg);padding:8px 14px;border-radius:8px;border:1px solid var(--border)">' +
+            '<span style="font-weight:600;font-size:13px">' + entry[0] + '</span>' +
+            '<span class="badge badge-success">' + entry[1] + '</span>' +
+          '</div>';
+        }).join('') +
+        '</div></div>' : '') +
 
       // Painel de orçamentos em alerta — só renderiza se houver algo
       ((orcVencidos.length || orcAlerta.length) ?
@@ -1071,14 +1298,36 @@
       // MELHORIA 4: contratos filtrados por colaboradora selecionada
       const filtrados = d2Filtro ? dist.filter(function(p) { return p.colabDist === d2Filtro && p.statusAcerto !== 'Finalizado'; }) : [];
 
+      // Finalizados hoje por colaboradora
+      const hojeD2 = new Date().toISOString().split('T')[0];
+      const finHoje = {};
+      S.fins.filter(function(f) { return f.data === hojeD2; }).forEach(function(f) {
+        const c = f.finalizadoPor || 'Sem nome';
+        finHoje[c] = (finHoje[c] || 0) + 1;
+      });
+      const totalFinHoje = Object.values(finHoje).reduce(function(s, n) { return s + n; }, 0);
+
       c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Dashboard Desocupacao</h1><p class="section-subtitle">Visao geral do processo de desocupacao</p></div></div>' +
-      '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px">' +
-        '<div class="stat-card animate-in stagger-1" style="' + (aguardandoDist > 0 ? 'border:2px solid var(--warning)' : '') + '"><div class="stat-icon stat-icon-amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="12"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-content"><div class="stat-value" style="' + (aguardandoDist > 0 ? 'color:var(--warning)' : '') + '" onclick="goTab(\'dist\')" style="cursor:pointer">' + aguardandoDist + '</div><div class="stat-label">A distribuir</div></div></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px">' +
+        '<div class="stat-card animate-in stagger-1" style="' + (aguardandoDist > 0 ? 'border:2px solid var(--warning)' : '') + '"><div class="stat-icon stat-icon-amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="12"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-content"><div class="stat-value" style="' + (aguardandoDist > 0 ? 'color:var(--warning)' : '') + '">' + aguardandoDist + '</div><div class="stat-label">A distribuir</div></div></div>' +
         '<div class="stat-card animate-in stagger-2"><div class="stat-icon stat-icon-blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><div class="stat-content"><div class="stat-value">' + encerrar + '</div><div class="stat-label">Encerrar aluguel</div></div></div>' +
         '<div class="stat-card animate-in stagger-3"><div class="stat-icon stat-icon-amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-content"><div class="stat-value">' + pendente + '</div><div class="stat-label">Pendente</div></div></div>' +
         '<div class="stat-card animate-in stagger-4"><div class="stat-icon stat-icon-green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="stat-content"><div class="stat-value">' + emAndamento + '</div><div class="stat-label">Em andamento</div></div></div>' +
-        '<div class="stat-card animate-in stagger-5"><div class="stat-icon" style="background:rgba(139,92,246,0.12);color:#7C3AED"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="stat-content"><div class="stat-value">' + finalizado + '</div><div class="stat-label">Finalizado</div></div></div>' +
       '</div>' +
+
+      // Finalizados hoje por colaboradora
+      (totalFinHoje > 0 ? '<div class="card animate-in" style="margin-bottom:20px;border-left:4px solid var(--success)">' +
+        '<div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">' +
+          '<h3 style="font-size:13px;font-weight:700;color:var(--success);text-transform:uppercase">✓ Finalizados Hoje (' + totalFinHoje + ')</h3>' +
+        '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:12px;padding:14px 20px">' +
+        Object.entries(finHoje).sort(function(a,b){ return b[1]-a[1]; }).map(function(entry) {
+          return '<div style="display:flex;align-items:center;gap:8px;background:var(--bg);padding:8px 14px;border-radius:8px;border:1px solid var(--border)">' +
+            '<span style="font-weight:600;font-size:13px">' + entry[0].split(' ')[0] + '</span>' +
+            '<span class="badge badge-success">' + entry[1] + '</span>' +
+          '</div>';
+        }).join('') +
+        '</div></div>' : '') +
 
       // Métricas
       '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">' +
@@ -1129,12 +1378,6 @@
       '</div>' +
 
       // Painel sem movimentação — ABAIXO dos dois painéis acima
-      (semMovimento.length ? '<div class="card animate-in" style="margin-bottom:20px;border:2px solid var(--warning)"><div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><h3 style="font-size:12px;font-weight:700;color:var(--warning);text-transform:uppercase">Sem movimentacao ha 4+ dias (' + semMovimento.length + ')</h3></div><div style="display:flex;flex-wrap:wrap;gap:0">' +
-        semMovimento.map(function(p) {
-          const d = diasSemMovimento(p);
-          return '<div class="colab-row" style="flex:1;min-width:280px"><span class="badge badge-primary">' + p.contrato + '</span><div style="flex:1;margin-left:10px"><div style="font-weight:600;font-size:13px">' + p.end + '</div><div style="font-size:11px;color:var(--fg-muted)">' + p.colabDist + ' · ' + (p.modal||'-') + '</div></div><div class="prazo-alert prazo-alerta">' + d + 'd parado</div></div>';
-        }).join('') + '</div></div>' : '') +
-
       // Painel de contratos da colaboradora filtrada
       (d2Filtro && filtrados.length ? '<div class="card animate-in"><div style="padding:16px 20px;border-bottom:1px solid var(--border);background:var(--accent-light)"><h3 style="font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase">Contratos de ' + d2Filtro + ' (' + filtrados.length + ')</h3></div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereco</th><th>Modalidade</th><th>Encerramento</th><th>Prazo</th><th>Status</th><th>Movimentacao</th></tr></thead><tbody>' +
         filtrados.map(function(p) {
@@ -1266,7 +1509,7 @@
     function rSlts(s) { const lb = document.getElementById('sl-lbl'), sg = document.getElementById('sl-slts'); if (!s || !sg) { if (lb) lb.textContent = 'Selecione um dia'; if (sg) sg.innerHTML = ''; return; } const f = fex(s); if (lb) lb.textContent = 'Horarios — ' + f.full; sg.innerHTML = hrsD(s).map(function(h) { const sl = slSt(s, h), is = S.SEL.hora === h; if (sl.t === 'ag') return '<div class="time-slot booked" title="Ocupado: ' + sl.tx + '">' + h + '</div>'; if (sl.t === 'bl') return '<div class="time-slot disabled">' + h + '</div>'; if (sl.t === 'oc') return '<div class="time-slot booked">' + h + '</div>'; return '<div class="time-slot' + (is ? ' selected' : '') + '" onclick="sHora(\'' + h + '\')">' + h + '</div>'; }).join(''); }
     function sHora(h) { S.SEL.hora = h; rSlts(S.SEL.dia); const f = fex(S.SEL.dia), r = document.getElementById('rsel'); if (r) { r.style.display = 'block'; r.innerHTML = 'Selecionado: <strong>' + f.full + '</strong> as <strong>' + h + '</strong>'; } }
     
-    function addAg() { 
+    async function addAg() { 
       const co = document.getElementById('ag-c').value.trim(), en = document.getElementById('ag-e').value.trim(), tp = document.getElementById('ag-t').value;
       const nomeInq = (document.getElementById('ag-nome') || {value:''}).value.trim();
       const telInq = (document.getElementById('ag-tel') || {value:''}).value.trim();
@@ -1330,13 +1573,14 @@
         status: 'Aguardando', 
         vinc: S.AGRET ? S.AGRET.id : null 
       }; 
-      if (S.AGRET) { 
+      try {
+        if (S.AGRET) { 
         S.AGRET.status = 'Realizada'; 
-        dbSaveAg(S.AGRET); // salva no banco
+        await dbSaveAg(S.AGRET); // salva no banco
         novo.obs = (novo.obs ? novo.obs + ' | ' : '') + 'Reagendamento vinculado'; 
       } 
-      S.ags.push(novo); 
-      dbSaveAg(novo);
+      await dbSaveAg(novo);
+        S.ags.push(novo);
       showToast(S.AGRET ? 'Reagendamento registrado!' : 'Agendamento registrado!', 'success'); 
       S.AGRET = null; 
       ['ag-c', 'ag-e', 'ag-ob', 'ag-nome', 'ag-tel'].forEach(function(id) { const el = document.getElementById(id); if (el) el.value = ''; }); 
@@ -1349,6 +1593,10 @@
       rlAg(); 
       rSCal(); 
       updateNavBadges();
+      } catch (e) {
+        console.error('addAg falhou ao salvar', e);
+        showToast('Erro ao salvar o agendamento. Verifique a conexao e tente novamente.', 'danger');
+      }
     }
     function rlAg() { const d = document.getElementById('ag-list'); if (!d) return; if (!S.ags.length) { d.innerHTML = '<p style="color:var(--fg-subtle);padding:12px 0">Nenhum agendamento.</p>'; return; } d.innerHTML = S.ags.slice(-20).reverse().map(function(a) { const fC = fex(a.dataCad || a.data), fV = a.data && a.horaSel ? fex(a.data) : null; const isProp = a.tipo === 'acompanhada' && a.acomp === 'Proprietario'; const nomeInq = a.nomeInq || (a.contato ? a.contato.split('|')[0].trim() : '-'); const telInq = a.telefone || (a.contato && a.contato.includes('|') ? a.contato.split('|')[1].trim() : ''); const modalBadge = a.modal ? '<span class="badge badge-warning" style="margin-left:6px">' + a.modal + '</span>' : ''; return '<div style="padding:16px 0;border-bottom:1px solid var(--border)"><div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span class="badge badge-primary">' + a.contrato + '</span>' + modalBadge + '<span style="font-size:14px;font-weight:600;flex:1">' + a.end + '</span></div><div style="font-size:12px;color:var(--fg-subtle);margin-bottom:4px">Cadastro: ' + fC.full + ' as ' + a.horaCad + (a.colab ? ' · <strong>' + a.colab + '</strong>' : '') + '</div><div style="font-size:12px;margin-bottom:6px"><span style="font-weight:600">' + nomeInq + '</span>' + (telInq ? ' · <a href="tel:' + telInq.replace(/\D/g,'') + '" style="color:var(--accent)">' + telInq + '</a>' : '') + '</div>' + (fV && !isProp ? '<div><span class="badge badge-primary">' + fV.ds + ', ' + fV.dia + ' de ' + fV.mes + ' - ' + a.horaSel + '</span></div>' : '<span class="badge badge-warning">48h uteis</span>') + '<div style="margin-top:8px"><span class="badge ' + (a.status === 'Concluido' ? 'badge-success' : a.status === 'Atribuido' ? 'badge-primary' : 'badge-warning') + '">' + a.status + '</span></div>' + '<div style="margin-top:8px"><textarea class="form-input" onchange="upAgObs(\'' + a.id + '\',this.value)" placeholder="Observação..." style="min-height:52px;font-size:12px;resize:vertical;width:100%">' + (a.obs||'') + '</textarea></div></div>'; }).join(''); }
     
@@ -3572,36 +3820,48 @@
             <button class="btn btn-primary btn-lg" onclick="doLogin()" style="width:100%;margin-top:8px">Entrar</button>
           </div>
         </div>
-        <div id="MAIN" style="display:none">
-          <nav class="top-nav">
-            <div style="display:flex;align-items:center;padding:0 24px">
-              <div style="display:flex;align-items:center;gap:10px;padding-right:20px;border-right:1px solid var(--border);margin-right:16px">
-                <div style="width:36px;height:36px;background:linear-gradient(135deg,#2563EB,#3B82F6);border-radius:10px;display:flex;align-items:center;justify-content:center">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                </div>
-                <span style="font-size:15px;font-weight:700;color:var(--fg)">Casa Nova</span>
-              </div>
-              <div id="NAV" style="display:flex;flex:1;overflow-x:auto"></div>
-              <div style="display:flex;align-items:center;gap:12px;padding-left:16px;border-left:1px solid var(--border);margin-left:8px">
-                <div style="text-align:right"><div id="UN" style="font-size:13px;font-weight:600;color:var(--fg)"></div><div id="UR" style="font-size:11px;color:var(--fg-subtle)"></div></div>
-                <button class="btn btn-secondary btn-sm" onclick="doLogout()">Sair</button>
+        <div id="MAIN" style="display:none;flex:1">
+          <div class="sidebar-nav" id="SIDEBAR">
+            <div class="sidebar-logo">
+              <div class="logo-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+              <div><div class="logo-text">Casa Nova</div><div class="logo-sub">Imobiliária</div></div>
+            </div>
+            <div class="sidebar-user">
+              <div class="user-avatar" id="SB_AVT"></div>
+              <div class="user-info">
+                <div class="user-name" id="UN"></div>
+                <div class="user-role" id="UR"></div>
               </div>
             </div>
-          </nav>
-          <div class="toast-container" id="TOASTS"></div>
-          <div class="main-wrapper"><div class="content-area" id="CNT"></div><aside class="sidebar" id="SB"></aside></div>
-        </div>`;
-
-      // Acesso rápido removido por segurança
+            <div id="NAV"></div>
+            <div class="sidebar-bottom">
+              <div class="sidebar-logout" onclick="doLogout()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sair
+              </div>
+            </div>
+          </div>
+          <div class="main-wrapper">
+            <div class="toast-container" id="TOASTS"></div>
+            <div class="content-area" id="CNT"></div>
+            <aside class="sidebar" id="SB"></aside>
+          </div>
+        </div>
+      `;
 
       // Tenta restaurar sessão salva — agora que o HTML já foi reconstruído
       try {
         const sess = localStorage.getItem('cnSession');
         if (sess) {
-          const { login, senha } = JSON.parse(sess);
-          const f = S.users.find(function(x) { return x.login === login && x.senha === senha && x.ativo !== false; });
+          const saved = JSON.parse(sess);
+          const f = S.users.find(function(x) { 
+            return (x.id == saved.id || x.login === saved.login) && x.ativo !== false; 
+          });
           if (f) {
             S.user = f;
+            document.getElementById('LOGIN').style.display = 'none';
+            document.getElementById('MAIN').style.display = 'flex';
+            document.getElementById('UN').textContent = f.nome;
             iniciarSessao(f);
           } else {
             localStorage.removeItem('cnSession');
