@@ -585,6 +585,10 @@
     function saveState() { /* no-op: cada ação salva diretamente no Supabase */ }
 
     // Carrega todos os dados do Supabase na inicialização
+    async function loadAll() {
+      await loadState();
+    }
+
     async function loadState() {
       try {
         const [users, ags, prots, fins, logs, gradeRows, cfgRows] = await Promise.all([
