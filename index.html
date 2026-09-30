@@ -540,7 +540,12 @@
 
     async function sbGet(tabela, params) {
       const qs = params ? '?' + params : '';
-      const r = await fetch(SB_URL + '/rest/v1/' + tabela + qs, { headers: Object.assign({}, SB_HDR, {'Prefer': 'return=representation'}) });
+      const r = await fetch(SB_URL + '/rest/v1/' + tabela + qs, { 
+        headers: Object.assign({}, SB_HDR, {
+          'Prefer': 'return=representation',
+          'Range': '0-9999'
+        }) 
+      });
       if (!r.ok) { console.error('sbGet error', tabela, await r.text()); return []; }
       return r.json();
     }
@@ -550,7 +555,7 @@
         headers: Object.assign({}, SB_HDR, {'Prefer': 'resolution=merge-duplicates,return=minimal'}),
         body: JSON.stringify(Array.isArray(dados) ? dados : [dados])
       });
-      if (!r.ok) { const _msg = await r.text(); console.error('sbUpsert error', tabela, _msg); throw new Error('sbUpsert ' + tabela + ': ' + _msg); }
+      if (!r.ok) console.error('sbUpsert error', tabela, await r.text());
     }
     async function sbDelete(tabela, campo, valor) {
       const r = await fetch(SB_URL + '/rest/v1/' + tabela + '?' + campo + '=eq.' + valor, { method: 'DELETE', headers: SB_HDR });
@@ -781,7 +786,7 @@
     const TABS_COL = [['meus', 'Meus Contratos'], ['tarefas', '✓ Tarefas'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['fin', 'Finalizados'], ['busca', '🔍 Busca']];
     const TABS_VIS = [['vist', 'Vistoriador'], ['ag', 'Agendamento'], ['hor', 'Horarios'], ['prot', 'Protocolo'], ['laud', 'Laudos']];
     const TABS_FIANCA = [['fianca', 'Contratos Fianca'], ['ret', '🔄 Retificar']];
-    const PFN = { d1: rD1, d2: rD2, hor: rHor, ag: rAg, vist: rVist, prot: rProt, laud: rLaud, orc: rOrc, dist: rDist, fin: rFin, adm: rAdm, meus: rMeus, busca: rBusca, hist: rHist, fianca: rFianca, rel: rRelatorio, tarefas: rTarefas, equipe: rEquipe, ret: rRetificar };
+    const PFN = { d1: rD1, d2: rD2, hor: rHor, ag: rAg, vist: rVist, prot: rProt, laud: rLaud, orc: rOrc, dist: rDist, fin: rFin, adm: rAdm, meus: rMeus, busca: rBusca, hist: rHist, fianca: rFianca, rel: rRelatorio, tarefas: rTarefas, equipe: rEquipe, ret: rRetificar, relvist: rRelVistoria };
     
     // Grupos do menu lateral por perfil
     function getSidebarGroups() {
@@ -822,6 +827,7 @@
       if (isAdmin || isGestVist || isGestOp) vistItems.push(['orc', 'Orçamentos']);
       if (isAdmin || isGestVist || isGestOp || isVist) vistItems.push(['ret', '🔄 Retificar']);
       if (isAdmin || isGestVist || isVist) vistItems.push(['hist', 'Histórico']);
+      if (isAdmin || isGestVist || isGestOp) vistItems.push(['relvist', '📊 Relatório']);
       if (vistItems.length) groups.push({ id: 'g-vist', label: 'Vistoria', icon: '🔍', items: vistItems });
 
       // SEGURO FIANÇA
@@ -1397,7 +1403,7 @@
     }
     
     function rHor(c, sb) { if (!S.calMes) { const h = new Date(); S.calMes = { a: h.getFullYear(), m: h.getMonth() }; } bCal(c, sb); }
-    function bCal(c, sb) { const a = S.calMes.a, m = S.calMes.m, ult = new Date(a, m + 1, 0), hj = new Date().toISOString().split('T')[0]; let rows = ''; for (let d = 1; d <= ult.getDate(); d++) { const s = iso(a, m, d), f = fex(s), dF = isDom(s) || isFer(s), sb2 = isSab(s), isH = s === hj; const cells = HSEM.map(function(h) { if (dF) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">' + (isFer(s) ? 'feriado' : 'domingo') + '</div></td>'; if (sb2 && HSAB.indexOf(h) < 0) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">sabado</div></td>'; const sl = slSt(s, h); if (sl.t === 'ag') return '<td style="background:var(--accent-light);padding:8px;vertical-align:top;cursor:pointer" onclick="showAgInfo(\'' + sl.id + '\')"><div style="font-size:10px;color:var(--accent);text-transform:uppercase;font-weight:700">agendado #' + sl.c + '</div><div style="font-size:11px;font-weight:600">' + sl.tx + '</div></td>'; if (sl.t === 'oc') return '<td style="background:var(--warning-light);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--warning);text-transform:uppercase;font-weight:700">ocupado</div></td>'; if (sl.t === 'bl') return '<td style="background:var(--bg);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--danger);text-transform:uppercase;font-weight:700">bloqueado</div>' + (sl.tx && sl.tx !== 'Bloqueado' ? '<div style="font-size:10px;color:var(--fg-muted);margin-top:2px;font-style:italic">' + sl.tx + '</div>' : '') + '<div style="font-size:9px;color:var(--accent);margin-top:2px">Desbloquear</div></td>'; return '<td style="background:var(--bg-card);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--success);text-transform:uppercase;font-weight:700">livre</div></td>'; }).join(''); rows += '<tr style="' + (isH ? 'background:var(--accent-light)' : '') + '"><td style="background:var(--bg);padding:10px 14px;min-width:160px;border-right:2px solid var(--border)"><div style="font-size:10px;color:var(--fg-subtle)">' + f.ds + '</div><div style="font-size:14px;font-weight:700;color:var(--fg)">' + f.dia + ' de ' + f.mes + '</div></td>' + cells + '</tr>'; } c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Grade de Horarios</h1></div></div><div class="card animate-in" style="overflow:visible"><div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px"><button class="btn btn-secondary btn-sm" onclick="calMov(-1)">Anterior</button><span style="font-size:15px;font-weight:700">' + ML[m] + ' ' + a + '</span><button class="btn btn-secondary btn-sm" onclick="calMov(1)">Proximo</button></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="background:var(--bg);padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;min-width:160px;border-right:2px solid var(--border)">Data</th>' + HSEM.map(function(h) { return '<th style="background:linear-gradient(135deg,var(--accent),#3B82F6);color:white;padding:10px 12px;text-align:center;font-size:11px;font-weight:700">' + h + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div></div>'; showSidebar(false); }
+    function bCal(c, sb) { const a = S.calMes.a, m = S.calMes.m, ult = new Date(a, m + 1, 0), hj = new Date().toISOString().split('T')[0]; let rows = ''; for (let d = 1; d <= ult.getDate(); d++) { const s = iso(a, m, d), f = fex(s), dF = isDom(s) || isFer(s), sb2 = isSab(s), isH = s === hj; const cells = HSEM.map(function(h) { if (dF) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">' + (isFer(s) ? 'feriado' : 'domingo') + '</div></td>'; if (sb2 && HSAB.indexOf(h) < 0) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">sabado</div></td>'; const sl = slSt(s, h); if (sl.t === 'ag') return '<td style="background:var(--accent-light);padding:8px;vertical-align:top;cursor:pointer" onclick="showAgInfo(\'' + sl.id + '\')"><div style="font-size:10px;color:var(--accent);text-transform:uppercase;font-weight:700">agendado #' + sl.c + '</div><div style="font-size:11px;font-weight:600">' + sl.tx + '</div></td>'; if (sl.t === 'oc') return '<td style="background:var(--warning-light);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--warning);text-transform:uppercase;font-weight:700">ocupado</div></td>'; if (sl.t === 'bl') return '<td style="background:var(--bg);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--danger);text-transform:uppercase;font-weight:700">bloqueado</div>' + (sl.tx && sl.tx !== 'Bloqueado' ? '<div style="font-size:10px;color:var(--fg-muted);margin-top:2px;font-style:italic">' + sl.tx + '</div>' : '') + (sl.bloqueadoPor ? '<div style="font-size:9px;color:var(--fg-subtle)">por ' + sl.bloqueadoPor + '</div>' : '') + '<div style="font-size:9px;color:var(--accent);margin-top:2px">Desbloquear</div></td>'; return '<td style="background:var(--bg-card);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--success);text-transform:uppercase;font-weight:700">livre</div></td>'; }).join(''); rows += '<tr style="' + (isH ? 'background:var(--accent-light)' : '') + '"><td style="background:var(--bg);padding:10px 14px;min-width:160px;border-right:2px solid var(--border)"><div style="font-size:10px;color:var(--fg-subtle)">' + f.ds + '</div><div style="font-size:14px;font-weight:700;color:var(--fg)">' + f.dia + ' de ' + f.mes + '</div></td>' + cells + '</tr>'; } c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Grade de Horarios</h1></div></div><div class="card animate-in" style="overflow:visible"><div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px"><button class="btn btn-secondary btn-sm" onclick="calMov(-1)">Anterior</button><span style="font-size:15px;font-weight:700">' + ML[m] + ' ' + a + '</span><button class="btn btn-secondary btn-sm" onclick="calMov(1)">Proximo</button><button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="agendamentoLivre()">+ Agendamento Livre</button></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="background:var(--bg);padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;min-width:160px;border-right:2px solid var(--border)">Data</th>' + HSEM.map(function(h) { return '<th style="background:linear-gradient(135deg,var(--accent),#3B82F6);color:white;padding:10px 12px;text-align:center;font-size:11px;font-weight:700">' + h + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div></div>'; showSidebar(false); }
     
     function showAgInfo(agId) {
       const ag = S.ags.find(function(a) { return a.id == agId; });
@@ -1406,27 +1412,107 @@
     }
     
     function calMov(d) { S.calMes.m += d; if (S.calMes.m > 11) { S.calMes.m = 0; S.calMes.a++; } if (S.calMes.m < 0) { S.calMes.m = 11; S.calMes.a--; } bCal(document.getElementById('CNT'), document.getElementById('SB')); }
+    function agendamentoLivre() {
+      const overlay = document.createElement('div');
+      overlay.id = 'modal-aglivre';
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = '<div class="modal-box" style="min-width:360px"><h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Agendamento Livre</h3>' +
+        '<div class="form-group"><label class="form-label">Data</label><input type="date" class="form-input" id="agl-data" value="' + new Date().toISOString().split('T')[0] + '"></div>' +
+        '<div class="form-group"><label class="form-label">Hora</label><input type="time" class="form-input" id="agl-hora" placeholder="Ex: 15:00"></div>' +
+        '<div class="form-group"><label class="form-label">Demanda</label><input type="text" class="form-input" id="agl-desc" placeholder="Ex: Vistoria com proprietário — Rua X, 123"></div>' +
+        '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">' +
+        '<button class="btn btn-secondary" onclick="document.getElementById(\'modal-aglivre\').remove()">Cancelar</button>' +
+        '<button class="btn btn-primary" onclick="salvarAgLivre()">Salvar</button>' +
+        '</div></div>';
+      document.body.appendChild(overlay);
+    }
+
+    function salvarAgLivre() {
+      const data = (document.getElementById('agl-data')||{value:''}).value;
+      const hora = (document.getElementById('agl-hora')||{value:''}).value;
+      const desc = (document.getElementById('agl-desc')||{value:''}).value.trim();
+      if (!data || !hora || !desc) { showToast('Preencha todos os campos!', 'danger'); return; }
+      // Formata hora para padrão HH:MM
+      const horaFmt = hora.substring(0,5);
+      if (!S.grade[data]) S.grade[data] = {};
+      const newVal = { t: 'bl', tx: desc, tipoBlq: 'Agendamento Livre', bloqueadoPor: S.user ? S.user.nome : '', horaLivre: horaFmt };
+      S.grade[data][horaFmt] = newVal;
+      dbSaveGrade(data, horaFmt, newVal);
+      const modal = document.getElementById('modal-aglivre');
+      if (modal) modal.remove();
+      // Navega para o mês da data salva
+      const d = new Date(data + 'T12:00:00');
+      S.calMes = { a: d.getFullYear(), m: d.getMonth() };
+      bCal(document.getElementById('CNT'), document.getElementById('SB'));
+      showToast('Agendamento livre salvo!', 'success');
+    }
+
+    function blqTipoChg() {
+      const tipo = (document.getElementById('blq-tipo')||{value:''}).value;
+      const obsGroup = document.getElementById('blq-obs-group');
+      const obs = document.getElementById('blq-obs');
+      if (tipo === 'Vistoria com Proprietário') {
+        if (obs) obs.placeholder = 'Ex: Rua X, 123 — contato do proprietário...';
+      } else if (tipo === 'Indisponibilidade') {
+        if (obs) obs.placeholder = 'Ex: Consulta médica, folga...';
+      } else {
+        if (obs) obs.placeholder = 'Descreva o motivo...';
+      }
+    }
+
+    function confirmarBlq(s, h) {
+      const tipo = (document.getElementById('blq-tipo')||{value:''}).value;
+      const obs = (document.getElementById('blq-obs')||{value:''}).value.trim();
+      if (!tipo) { showToast('Selecione o tipo!', 'danger'); return; }
+      const motivo = tipo + (obs ? ' — ' + obs : '');
+      const newVal = { t: 'bl', tx: motivo, tipoBlq: tipo, bloqueadoPor: S.user ? S.user.nome : '' };
+      if (!S.grade[s]) S.grade[s] = {};
+      S.grade[s][h] = newVal;
+      dbSaveGrade(s, h, newVal);
+      const modal = document.getElementById('modal-blq');
+      if (modal) modal.remove();
+      bCal(document.getElementById('CNT'), document.getElementById('SB'));
+      showToast('Horario bloqueado!', 'success');
+    }
+
     function tBlq(s, h) { 
       if (!S.grade[s]) S.grade[s] = {}; 
       const sl = S.grade[s][h]; 
       const wasBlocked = sl && sl.t === 'bl'; 
+      const isAdmin = S.user && S.user.role === 'admin';
       if (wasBlocked) {
-        // Desbloquear — sem confirmação necessária
+        // Verifica se quem tenta desbloquear é o mesmo que bloqueou ou admin
+        const bloqueadoPor = sl.bloqueadoPor || '';
+        const nomeAtual = S.user ? S.user.nome : '';
+        if (bloqueadoPor && bloqueadoPor !== nomeAtual && !isAdmin) {
+          showToast('Apenas ' + bloqueadoPor + ' ou o Admin pode desbloquear este horário!', 'danger');
+          return;
+        }
         const newVal = { t: 'lv', tx: '' };
         S.grade[s][h] = newVal; 
         dbSaveGrade(s, h, newVal); 
         bCal(document.getElementById('CNT'), document.getElementById('SB')); 
         showToast('Horario desbloqueado!', 'success');
       } else {
-        // Bloquear — pede motivo
-        showPrompt('Motivo do bloqueio', 'Informe o motivo para bloquear este horário:', function(motivo) {
-          if (!motivo || !motivo.trim()) { showToast('Informe o motivo do bloqueio!', 'danger'); return; }
-          const newVal = { t: 'bl', tx: motivo.trim() };
-          S.grade[s][h] = newVal; 
-          dbSaveGrade(s, h, newVal); 
-          bCal(document.getElementById('CNT'), document.getElementById('SB')); 
-          showToast('Horario bloqueado!', 'success');
-        });
+        // Bloquear — modal com tipo e motivo
+        const overlay = document.createElement('div');
+        overlay.id = 'modal-blq';
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = '<div class="modal-box" style="min-width:340px"><h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Bloquear Horário</h3>' +
+          '<div class="form-group"><label class="form-label">Tipo</label>' +
+          '<select class="form-input form-select" id="blq-tipo" onchange="blqTipoChg()">' +
+          '<option value="">Selecionar...</option>' +
+          '<option value="Vistoria com Proprietário">Vistoria com Proprietário</option>' +
+          '<option value="Indisponibilidade">Indisponibilidade</option>' +
+          '<option value="Outro">Outro</option>' +
+          '</select></div>' +
+          '<div class="form-group" id="blq-obs-group"><label class="form-label">Descrição</label>' +
+          '<input type="text" class="form-input" id="blq-obs" placeholder="Descreva o motivo..."></div>' +
+          '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">' +
+          '<button class="btn btn-secondary" onclick="document.getElementById(\'modal-blq\').remove()">Cancelar</button>' +
+          '<button class="btn btn-primary" onclick="confirmarBlq(\'' + s + '\',\'' + h + '\')">Bloquear</button>' +
+          '</div></div>';
+        document.body.appendChild(overlay);
       }
     }
 
@@ -1509,7 +1595,7 @@
     function rSlts(s) { const lb = document.getElementById('sl-lbl'), sg = document.getElementById('sl-slts'); if (!s || !sg) { if (lb) lb.textContent = 'Selecione um dia'; if (sg) sg.innerHTML = ''; return; } const f = fex(s); if (lb) lb.textContent = 'Horarios — ' + f.full; sg.innerHTML = hrsD(s).map(function(h) { const sl = slSt(s, h), is = S.SEL.hora === h; if (sl.t === 'ag') return '<div class="time-slot booked" title="Ocupado: ' + sl.tx + '">' + h + '</div>'; if (sl.t === 'bl') return '<div class="time-slot disabled">' + h + '</div>'; if (sl.t === 'oc') return '<div class="time-slot booked">' + h + '</div>'; return '<div class="time-slot' + (is ? ' selected' : '') + '" onclick="sHora(\'' + h + '\')">' + h + '</div>'; }).join(''); }
     function sHora(h) { S.SEL.hora = h; rSlts(S.SEL.dia); const f = fex(S.SEL.dia), r = document.getElementById('rsel'); if (r) { r.style.display = 'block'; r.innerHTML = 'Selecionado: <strong>' + f.full + '</strong> as <strong>' + h + '</strong>'; } }
     
-    async function addAg() { 
+    function addAg() { 
       const co = document.getElementById('ag-c').value.trim(), en = document.getElementById('ag-e').value.trim(), tp = document.getElementById('ag-t').value;
       const nomeInq = (document.getElementById('ag-nome') || {value:''}).value.trim();
       const telInq = (document.getElementById('ag-tel') || {value:''}).value.trim();
@@ -1573,14 +1659,13 @@
         status: 'Aguardando', 
         vinc: S.AGRET ? S.AGRET.id : null 
       }; 
-      try {
-        if (S.AGRET) { 
+      if (S.AGRET) { 
         S.AGRET.status = 'Realizada'; 
-        await dbSaveAg(S.AGRET); // salva no banco
+        dbSaveAg(S.AGRET); // salva no banco
         novo.obs = (novo.obs ? novo.obs + ' | ' : '') + 'Reagendamento vinculado'; 
       } 
-      await dbSaveAg(novo);
-        S.ags.push(novo);
+      S.ags.push(novo); 
+      dbSaveAg(novo);
       showToast(S.AGRET ? 'Reagendamento registrado!' : 'Agendamento registrado!', 'success'); 
       S.AGRET = null; 
       ['ag-c', 'ag-e', 'ag-ob', 'ag-nome', 'ag-tel'].forEach(function(id) { const el = document.getElementById(id); if (el) el.value = ''; }); 
@@ -1593,10 +1678,6 @@
       rlAg(); 
       rSCal(); 
       updateNavBadges();
-      } catch (e) {
-        console.error('addAg falhou ao salvar', e);
-        showToast('Erro ao salvar o agendamento. Verifique a conexao e tente novamente.', 'danger');
-      }
     }
     function rlAg() { const d = document.getElementById('ag-list'); if (!d) return; if (!S.ags.length) { d.innerHTML = '<p style="color:var(--fg-subtle);padding:12px 0">Nenhum agendamento.</p>'; return; } d.innerHTML = S.ags.slice(-20).reverse().map(function(a) { const fC = fex(a.dataCad || a.data), fV = a.data && a.horaSel ? fex(a.data) : null; const isProp = a.tipo === 'acompanhada' && a.acomp === 'Proprietario'; const nomeInq = a.nomeInq || (a.contato ? a.contato.split('|')[0].trim() : '-'); const telInq = a.telefone || (a.contato && a.contato.includes('|') ? a.contato.split('|')[1].trim() : ''); const modalBadge = a.modal ? '<span class="badge badge-warning" style="margin-left:6px">' + a.modal + '</span>' : ''; return '<div style="padding:16px 0;border-bottom:1px solid var(--border)"><div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span class="badge badge-primary">' + a.contrato + '</span>' + modalBadge + '<span style="font-size:14px;font-weight:600;flex:1">' + a.end + '</span></div><div style="font-size:12px;color:var(--fg-subtle);margin-bottom:4px">Cadastro: ' + fC.full + ' as ' + a.horaCad + (a.colab ? ' · <strong>' + a.colab + '</strong>' : '') + '</div><div style="font-size:12px;margin-bottom:6px"><span style="font-weight:600">' + nomeInq + '</span>' + (telInq ? ' · <a href="tel:' + telInq.replace(/\D/g,'') + '" style="color:var(--accent)">' + telInq + '</a>' : '') + '</div>' + (fV && !isProp ? '<div><span class="badge badge-primary">' + fV.ds + ', ' + fV.dia + ' de ' + fV.mes + ' - ' + a.horaSel + '</span></div>' : '<span class="badge badge-warning">48h uteis</span>') + '<div style="margin-top:8px"><span class="badge ' + (a.status === 'Concluido' ? 'badge-success' : a.status === 'Atribuido' ? 'badge-primary' : 'badge-warning') + '">' + a.status + '</span></div>' + '<div style="margin-top:8px"><textarea class="form-input" onchange="upAgObs(\'' + a.id + '\',this.value)" placeholder="Observação..." style="min-height:52px;font-size:12px;resize:vertical;width:100%">' + (a.obs||'') + '</textarea></div></div>'; }).join(''); }
     
@@ -2124,7 +2205,7 @@
 
     function rDist(c, sb) { 
       const fila = S.prots.filter(function(p) { return !p.colabDist; }); 
-      const dist = S.prots.filter(function(p) { return p.colabDist && p.statusAcerto !== 'Finalizado'; }); 
+      const dist = S.prots.filter(function(p) { return p.colabDist && p.colabDist !== 'Ja distribuido'; }); 
       dist.sort(function(a, b) { return priP(a) - priP(b); });
       const ativos = getRodizioAtivos().map(function(u) { return u.nome; });
       
@@ -3212,6 +3293,95 @@
       dbSaveProt(p);
       showToast('Observação salva!', 'success');
     }
+    // ── RELATÓRIO DE VISTORIAS ────────────────────────────────────────────────
+    function rRelVistoria(c, sb) {
+      const hoje = new Date().toISOString().split('T')[0];
+      const primeiroDiaMes = hoje.substring(0,7) + '-01';
+
+      c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Relatório de Vistorias</h1><p class="section-subtitle">Totais, acompanhadas e por vistoriador</p></div></div>' +
+        '<div class="card animate-in" style="padding:20px 24px;margin-bottom:20px">' +
+          '<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">' +
+            '<div class="form-group" style="margin:0"><label class="form-label">Data início</label><input type="date" class="form-input" id="rv-ini" value="' + primeiroDiaMes + '"></div>' +
+            '<div class="form-group" style="margin:0"><label class="form-label">Data fim</label><input type="date" class="form-input" id="rv-fim" value="' + hoje + '"></div>' +
+            '<button class="btn btn-primary" onclick="gerarRelVistoria()">Gerar Relatório</button>' +
+          '</div>' +
+        '</div>' +
+        '<div id="rv-result"></div>';
+
+      showSidebar(false);
+    }
+
+    function gerarRelVistoria() {
+      const ini = (document.getElementById('rv-ini')||{value:''}).value;
+      const fim = (document.getElementById('rv-fim')||{value:''}).value;
+      if (!ini || !fim) { showToast('Informe o período!', 'danger'); return; }
+
+      // Filtra agendamentos no período
+      const ags = S.ags.filter(function(a) {
+        const d = a.dataCad || a.data || '';
+        return d >= ini && d <= fim && (a.status === 'Concluido' || a.status === 'Realizada');
+      });
+
+      // Vistorias por tipo
+      const acomp = ags.filter(function(a) { return a.tipo === 'acompanhada'; });
+      const naoAcomp = ags.filter(function(a) { return a.tipo !== 'acompanhada'; });
+      
+      // Vistorias com proprietário (via bloqueio na grade)
+      const comProp = [];
+      Object.keys(S.grade).forEach(function(data) {
+        if (data < ini || data > fim) return;
+        Object.keys(S.grade[data]).forEach(function(hora) {
+          const sl = S.grade[data][hora];
+          if (sl && sl.tipoBlq === 'Vistoria com Proprietário') {
+            comProp.push({ data: data, hora: hora, tx: sl.tx, bloqueadoPor: sl.bloqueadoPor });
+          }
+        });
+      });
+
+      const totalGeral = ags.length + comProp.length;
+
+      // Por vistoriador
+      const porVist = {};
+      ags.forEach(function(a) {
+        const v = a.vistoriador || 'Sem vistoriador';
+        if (!porVist[v]) porVist[v] = { total: 0, acomp: 0, naoAcomp: 0 };
+        porVist[v].total++;
+        if (a.tipo === 'acompanhada') porVist[v].acomp++;
+        else porVist[v].naoAcomp++;
+      });
+      comProp.forEach(function(p) {
+        const v = p.bloqueadoPor || 'Sem vistoriador';
+        if (!porVist[v]) porVist[v] = { total: 0, acomp: 0, naoAcomp: 0 };
+        porVist[v].total++;
+        porVist[v].acomp++;
+      });
+
+      const result = document.getElementById('rv-result');
+      if (!result) return;
+
+      result.innerHTML =
+        // Cards resumo
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">' +
+          '<div class="stat-card animate-in"><div class="stat-content"><div class="stat-value">' + totalGeral + '</div><div class="stat-label">Total de Vistorias</div></div></div>' +
+          '<div class="stat-card animate-in"><div class="stat-content"><div class="stat-value" style="color:var(--success)">' + (acomp.length + comProp.length) + '</div><div class="stat-label">Acompanhadas</div></div></div>' +
+          '<div class="stat-card animate-in"><div class="stat-content"><div class="stat-value" style="color:var(--warning)">' + naoAcomp.length + '</div><div class="stat-label">Não acompanhadas</div></div></div>' +
+          '<div class="stat-card animate-in"><div class="stat-content"><div class="stat-value" style="color:var(--accent)">' + comProp.length + '</div><div class="stat-label">Com Proprietário</div></div></div>' +
+        '</div>' +
+
+        // Por vistoriador
+        '<div class="card animate-in">' +
+          '<div style="padding:14px 20px;border-bottom:1px solid var(--border)"><h3 style="font-size:12px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase">Por Vistoriador</h3></div>' +
+          '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Vistoriador</th><th>Total</th><th>Acompanhadas</th><th>Não Acompanhadas</th></tr></thead><tbody>' +
+          (Object.keys(porVist).length ? Object.entries(porVist).sort(function(a,b){ return b[1].total - a[1].total; }).map(function(entry) {
+            return '<tr><td style="font-weight:600">' + entry[0] + '</td>' +
+              '<td><span class="badge badge-primary">' + entry[1].total + '</span></td>' +
+              '<td><span class="badge badge-success">' + entry[1].acomp + '</span></td>' +
+              '<td><span class="badge badge-warning">' + entry[1].naoAcomp + '</span></td></tr>';
+          }).join('') : '<tr><td colspan="4" style="padding:24px;text-align:center;color:var(--fg-subtle)">Nenhuma vistoria encontrada no período.</td></tr>') +
+          '</tbody></table></div>' +
+        '</div>';
+    }
+
     // ── LAUDO/ORÇAMENTO RETIFICAR ─────────────────────────────────────────────
     var S_RET = []; // cache de retificações
 
@@ -3222,7 +3392,8 @@
           id: r.id, contrato: r.contrato, end: r.end_imovel, modal: r.modal,
           tipo: r.tipo, obs: r.obs, status: r.status || 'Pendente',
           cadastradoPor: r.cadastrado_por || '', data: r.created_at ? r.created_at.split('T')[0] : '',
-          resolvidoPor: r.resolvido_por || '', resolvidoEm: r.resolvido_em || ''
+          resolvidoPor: r.resolvido_por || '', resolvidoEm: r.resolvido_em || '',
+          enviadoSeguradora: r.enviado_seguradora || '', enviadoPor: r.enviado_por || '', enviadoEm: r.enviado_em || ''
         }; });
       } catch(e) { S_RET = []; }
     }
@@ -3292,7 +3463,7 @@
       // Lista resolvidos
       (resolvidos.length ? '<div class="card animate-in">' +
         '<div style="padding:12px 20px;border-bottom:1px solid var(--border)"><h3 style="font-size:12px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase">Resolvidos (' + resolvidos.length + ')</h3></div>' +
-        '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereço</th><th>Modalidade</th><th>Tipo</th><th>O que foi alterado</th><th>Data</th><th>Resolvido por</th></tr></thead><tbody>' +
+        '<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Contrato</th><th>Endereço</th><th>Modalidade</th><th>Tipo</th><th>O que foi alterado</th><th>Data</th><th>Resolvido por</th><th>Enviado à Seguradora</th></tr></thead><tbody>' +
         resolvidos.map(function(r) {
           let resolvidoInfo = '—';
           if (r.resolvidoPor) {
@@ -3304,7 +3475,19 @@
               resolvidoInfo += '<div style="font-size:10px;color:var(--fg-subtle)">' + data + ' às ' + hora + '</div>';
             }
           }
-          return '<tr style="opacity:0.7"><td><span class="badge badge-primary">' + r.contrato + '</span></td><td style="font-weight:600">' + r.end + '</td><td><span class="badge badge-neutral">' + (r.modal||'-') + '</span></td><td><span class="badge badge-success">' + r.tipo + ' ✓</span></td><td style="font-size:12px">' + (r.obs||'—') + '</td><td>' + fmtData(r.data) + '</td><td style="font-size:12px">' + resolvidoInfo + '</td></tr>';
+          const canEnviar = S.user && S.user.role === 'seguro_fianca' && !r.enviadoSeguradora;
+          let enviadoInfo;
+          if (r.enviadoSeguradora) {
+            const d = new Date(r.enviadoEm);
+            const dataEnv = d.toLocaleDateString('pt-BR');
+            const horaEnv = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+            enviadoInfo = '<span class="badge badge-success">✅ Enviado</span><div style="font-size:10px;color:var(--fg-subtle)">' + r.enviadoPor + '<br>' + dataEnv + ' às ' + horaEnv + '</div>';
+          } else if (canEnviar) {
+            enviadoInfo = '<button class="btn btn-success btn-sm" onclick="marcarEnvioSeguradora(\'' + r.id + '\')">✓ Confirmar envio</button>';
+          } else {
+            enviadoInfo = '<span style="color:var(--fg-subtle);font-size:12px">Aguardando</span>';
+          }
+          return '<tr style="opacity:0.85"><td><span class="badge badge-primary">' + r.contrato + '</span></td><td style="font-weight:600">' + r.end + '</td><td><span class="badge badge-neutral">' + (r.modal||'-') + '</span></td><td><span class="badge badge-success">' + r.tipo + ' ✓</span></td><td style="font-size:12px">' + (r.obs||'—') + '</td><td>' + fmtData(r.data) + '</td><td style="font-size:12px">' + resolvidoInfo + '</td><td style="font-size:12px">' + enviadoInfo + '</td></tr>';
         }).join('') +
         '</tbody></table></div></div>' : '') +
 
@@ -3330,6 +3513,20 @@
         showToast('Retificação cadastrada!', 'success');
         rRetificar(document.getElementById('CNT'), document.getElementById('SB'));
       } catch(e) { showToast('Erro ao salvar: ' + e.message, 'danger'); }
+    }
+
+    async function marcarEnvioSeguradora(id) {
+      try {
+        const agora = new Date();
+        const enviadoPor = S.user ? S.user.nome : '—';
+        const enviadoEm = agora.toISOString();
+        await fetch(SB_URL + '/rest/v1/retificacoes?id=eq.' + id, {
+          method: 'PATCH', headers: { ...SB_HDR, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enviado_seguradora: true, enviado_por: enviadoPor, enviado_em: enviadoEm })
+        });
+        showToast('Envio à seguradora confirmado!', 'success');
+        rRetificar(document.getElementById('CNT'), document.getElementById('SB'));
+      } catch(e) { showToast('Erro ao confirmar envio', 'danger'); }
     }
 
     async function resolverRetificacao(id) {
