@@ -1407,7 +1407,19 @@
     }
     
     function rHor(c, sb) { if (!S.calMes) { const h = new Date(); S.calMes = { a: h.getFullYear(), m: h.getMonth() }; } bCal(c, sb); }
-    function bCal(c, sb) { const a = S.calMes.a, m = S.calMes.m, ult = new Date(a, m + 1, 0), hj = new Date().toISOString().split('T')[0]; let rows = ''; for (let d = 1; d <= ult.getDate(); d++) { const s = iso(a, m, d), f = fex(s), dF = isDom(s) || isFer(s), sb2 = isSab(s), isH = s === hj; const cells = HSEM.map(function(h) { if (dF) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">' + (isFer(s) ? 'feriado' : 'domingo') + '</div></td>'; if (sb2 && HSAB.indexOf(h) < 0) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">sabado</div></td>'; const sl = slSt(s, h); if (sl.t === 'ag') return '<td style="background:var(--accent-light);padding:8px;vertical-align:top;cursor:pointer" onclick="showAgInfo(\'' + sl.id + '\')"><div style="font-size:10px;color:var(--accent);text-transform:uppercase;font-weight:700">agendado #' + sl.c + '</div><div style="font-size:11px;font-weight:600">' + sl.tx + '</div></td>'; if (sl.t === 'oc') return '<td style="background:var(--warning-light);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--warning);text-transform:uppercase;font-weight:700">ocupado</div></td>'; if (sl.t === 'bl') return '<td style="background:var(--bg);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--danger);text-transform:uppercase;font-weight:700">bloqueado</div>' + (sl.tx && sl.tx !== 'Bloqueado' ? '<div style="font-size:10px;color:var(--fg-muted);margin-top:2px;font-style:italic">' + sl.tx + '</div>' : '') + (sl.bloqueadoPor ? '<div style="font-size:9px;color:var(--fg-subtle)">por ' + sl.bloqueadoPor + '</div>' : '') + '<div style="font-size:9px;color:var(--accent);margin-top:2px">Desbloquear</div></td>'; return '<td style="background:var(--bg-card);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--success);text-transform:uppercase;font-weight:700">livre</div></td>'; }).join(''); rows += '<tr style="' + (isH ? 'background:var(--accent-light)' : '') + '"><td style="background:var(--bg);padding:10px 14px;min-width:160px;border-right:2px solid var(--border)"><div style="font-size:10px;color:var(--fg-subtle)">' + f.ds + '</div><div style="font-size:14px;font-weight:700;color:var(--fg)">' + f.dia + ' de ' + f.mes + '</div></td>' + cells + '</tr>'; } c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Grade de Horarios</h1></div></div><div class="card animate-in" style="overflow:visible"><div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px"><button class="btn btn-secondary btn-sm" onclick="calMov(-1)">Anterior</button><span style="font-size:15px;font-weight:700">' + ML[m] + ' ' + a + '</span><button class="btn btn-secondary btn-sm" onclick="calMov(1)">Proximo</button><button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="agendamentoLivre()">+ Agendamento Livre</button></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="background:var(--bg);padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;min-width:160px;border-right:2px solid var(--border)">Data</th>' + HSEM.map(function(h) { return '<th style="background:linear-gradient(135deg,var(--accent),#3B82F6);color:white;padding:10px 12px;text-align:center;font-size:11px;font-weight:700">' + h + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div></div>'; showSidebar(false); }
+    function bCal(c, sb) { const a = S.calMes.a, m = S.calMes.m, ult = new Date(a, m + 1, 0), hj = new Date().toISOString().split('T')[0]; let rows = ''; for (let d = 1; d <= ult.getDate(); d++) { const s = iso(a, m, d), f = fex(s), dF = isDom(s) || isFer(s), sb2 = isSab(s), isH = s === hj; const cells = HSEM.map(function(h) { if (dF) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">' + (isFer(s) ? 'feriado' : 'domingo') + '</div></td>'; if (sb2 && HSAB.indexOf(h) < 0) return '<td style="background:var(--bg);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--fg-subtle);text-transform:uppercase;font-weight:700">sabado</div></td>'; const sl = slSt(s, h); if (sl.t === 'ag') return '<td style="background:var(--accent-light);padding:8px;vertical-align:top;cursor:pointer" onclick="showAgInfo(\'' + sl.id + '\')"><div style="font-size:10px;color:var(--accent);text-transform:uppercase;font-weight:700">agendado #' + sl.c + '</div><div style="font-size:11px;font-weight:600">' + sl.tx + '</div></td>'; if (sl.t === 'oc') return '<td style="background:var(--warning-light);padding:8px;vertical-align:top"><div style="font-size:10px;color:var(--warning);text-transform:uppercase;font-weight:700">ocupado</div></td>'; if (sl.t === 'bl') return '<td style="background:var(--bg);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--danger);text-transform:uppercase;font-weight:700">bloqueado</div>' + (sl.tx && sl.tx !== 'Bloqueado' ? '<div style="font-size:10px;color:var(--fg-muted);margin-top:2px;font-style:italic">' + sl.tx + '</div>' : '') + (sl.bloqueadoPor ? '<div style="font-size:9px;color:var(--fg-subtle)">por ' + sl.bloqueadoPor + '</div>' : '') + '<div style="font-size:9px;color:var(--accent);margin-top:2px">Desbloquear</div></td>'; return '<td style="background:var(--bg-card);padding:8px;vertical-align:top;cursor:pointer" onclick="tBlq(\'' + s + '\',\'' + h + '\')"><div style="font-size:10px;color:var(--success);text-transform:uppercase;font-weight:700">livre</div></td>'; }).join(''); // Agendamentos livres do dia
+        const livres = S.grade[s] ? Object.entries(S.grade[s]).filter(function(e) {
+          return e[1] && e[1].tipoBlq === 'Agendamento Livre' && HSEM.indexOf(e[0]) < 0 && (HSAB.indexOf(e[0]) < 0 || !sb2);
+        }).sort(function(a,b){ return a[0].localeCompare(b[0]); }) : [];
+        const livresCell = livres.length ? '<td style="background:var(--bg);padding:8px;vertical-align:top;min-width:120px">' +
+          livres.map(function(e) {
+            return '<div style="margin-bottom:6px;cursor:pointer" onclick="tBlq('' + s + '','' + e[0] + '')">' +
+              '<div style="font-size:10px;font-weight:700;color:var(--accent)">' + e[0] + '</div>' +
+              '<div style="font-size:11px;color:var(--fg-muted);font-style:italic">' + e[1].tx + '</div>' +
+              '<div style="font-size:9px;color:var(--fg-subtle)">por ' + (e[1].bloqueadoPor||'') + '</div>' +
+            '</div>';
+          }).join('') + '</td>' : '<td style="background:var(--bg);padding:8px"></td>';
+        rows += '<tr style="' + (isH ? 'background:var(--accent-light)' : '') + '"><td style="background:var(--bg);padding:10px 14px;min-width:160px;border-right:2px solid var(--border)"><div style="font-size:10px;color:var(--fg-subtle)">' + f.ds + '</div><div style="font-size:14px;font-weight:700;color:var(--fg)">' + f.dia + ' de ' + f.mes + '</div></td>' + cells + livresCell + '</tr>'; } c.innerHTML = '<div class="section-header animate-in"><div><h1 class="section-title">Grade de Horarios</h1></div></div><div class="card animate-in" style="overflow:visible"><div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px"><button class="btn btn-secondary btn-sm" onclick="calMov(-1)">Anterior</button><span style="font-size:15px;font-weight:700">' + ML[m] + ' ' + a + '</span><button class="btn btn-secondary btn-sm" onclick="calMov(1)">Proximo</button><button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="agendamentoLivre()">+ Agendamento Livre</button></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="background:var(--bg);padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;min-width:160px;border-right:2px solid var(--border)">Data</th>' + HSEM.map(function(h) { return '<th style="background:linear-gradient(135deg,var(--accent),#3B82F6);color:white;padding:10px 12px;text-align:center;font-size:11px;font-weight:700">' + h + '</th>'; }).join('') + '<th style="background:linear-gradient(135deg,var(--accent),#3B82F6);color:white;padding:10px 12px;text-align:center;font-size:11px;font-weight:700">Livres</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>'; showSidebar(false); }
     
     function showAgInfo(agId) {
       const ag = S.ags.find(function(a) { return a.id == agId; });
@@ -3519,16 +3531,34 @@
       } catch(e) { showToast('Erro ao salvar: ' + e.message, 'danger'); }
     }
 
-    async function marcarEnvioSeguradora(id) {
+    function marcarEnvioSeguradora(id) {
+      const overlay = document.createElement('div');
+      overlay.id = 'modal-envio-seg';
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = '<div class="modal-box" style="min-width:320px">' +
+        '<h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Confirmar Envio à Seguradora</h3>' +
+        '<div class="form-group"><label class="form-label">Seu nome</label>' +
+        '<input type="text" class="form-input" id="envio-nome" placeholder="Digite seu nome..."></div>' +
+        '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">' +
+        '<button class="btn btn-secondary" onclick="document.getElementById(\'modal-envio-seg\').remove()">Cancelar</button>' +
+        '<button class="btn btn-success" onclick="confirmarEnvioSeguradora(\'' + id + '\')">Confirmar</button>' +
+        '</div></div>';
+      document.body.appendChild(overlay);
+      setTimeout(function() { const el = document.getElementById('envio-nome'); if (el) el.focus(); }, 100);
+    }
+
+    async function confirmarEnvioSeguradora(id) {
+      const nome = (document.getElementById('envio-nome')||{value:''}).value.trim();
+      if (!nome) { showToast('Informe seu nome!', 'danger'); return; }
       try {
         const agora = new Date();
-        const enviadoPor = S.user ? S.user.nome : '—';
-        const enviadoEm = agora.toISOString();
         await fetch(SB_URL + '/rest/v1/retificacoes?id=eq.' + id, {
           method: 'PATCH', headers: { ...SB_HDR, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enviado_seguradora: true, enviado_por: enviadoPor, enviado_em: enviadoEm })
+          body: JSON.stringify({ enviado_seguradora: true, enviado_por: nome, enviado_em: agora.toISOString() })
         });
-        showToast('Envio à seguradora confirmado!', 'success');
+        const modal = document.getElementById('modal-envio-seg');
+        if (modal) modal.remove();
+        showToast('Envio à seguradora confirmado por ' + nome + '!', 'success');
         rRetificar(document.getElementById('CNT'), document.getElementById('SB'));
       } catch(e) { showToast('Erro ao confirmar envio', 'danger'); }
     }
